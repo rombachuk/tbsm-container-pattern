@@ -1,0 +1,205 @@
+/******************************************************* {COPYRIGHT-TOP-RM} ***
+ * Licensed Materials - Property of IBM
+ * "Restricted Materials of IBM"
+ * 5724-S43
+ *
+ * (C) Copyright IBM Corporation 2011, 2014. All Rights Reserved.
+ *
+ * US Government Users Restricted Rights - Use, duplication, or
+ * disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+ ******************************************************* {COPYRIGHT-END-RM} **/
+
+@charset "utf-8";
+/* CSS Document */
+
+/* Basic Page Styling */
+
+/*
+body{
+	background-image: url(/opview/assets/images/background.png);
+	font-family:Verdana, Arial, Helvetica, sans-serif;
+	font-size:11px;
+	color:#333333;
+	margin:0px;
+	background-image:url(/opview/assets/images/background_ribbon.png);
+        background-repeat:repeat-x;
+	background-position:top center;
+	background-color:#d8e2f0;
+}
+*/
+
+/*td {border:0} Too over arching */
+
+.portletBackground {
+	margin-bottom: 24px;
+	line-height: 1.8em;
+	padding: 12px;
+	background-image:url(/opview/assets/images/portlet_bkg.gif);
+	background-color:#ebf0f7;
+	background-repeat:repeat-x;
+	-moz-border-radius:5px;
+	-webkit-border-radius:5px;
+	border:solid;
+	border-width:1px;
+	border-color:#738399;
+	}
+	
+.subPortletBackground {
+	background-color: #FFF;
+	border: 1px solid #666666;
+	padding: 20px;
+}
+
+
+/*  Typography  */
+
+/* Defect 42197 - IE doesn't correctly resize the MessageDialog's width when 
+ *                the message content includes a long word such as a fully
+ *                qualified class name.
+ */
+.messagedialog .message-description {
+    word-break: break-all;
+}
+
+#actionResponse {
+	font-size: 100%;
+	color: #c21818;
+	resize:	none;
+}
+
+#leftRegion h2{
+	margin: 10 0 0 5;
+	color: #006699;
+        line-height: 18pt;
+}
+
+#leftRegion dt{
+  line-height: 1.3em;
+}
+
+#centerRegion h2{
+	font-family: Tahoma, Verdana, Sans-serif;
+	font-size: 1.45em;
+	font-style: normal;
+        font-weight: normal;
+	color: #006699;
+        border-bottom: 1px solid #3399cc;
+        line-height:18pt;
+        margin: 0 0 10px 0;
+}
+
+#centerRegion h3{
+   color #333;
+   font-family: Verdana, Arial,sans-serif; 
+   font-weight: bold;
+}
+
+.subHeader {
+	font-family: Verdana, Helvetica, Arial, Sans-serif;
+	font-size: 12pt;
+	font-weight: bold;
+	color: #000000;
+}
+
+/* Form Layout */
+#centerRegion dl, #centerRegion .varSection {
+  margin: 0 0 10px 0;
+  padding: 0;
+}
+
+#centerRegion dt{
+  line-height: 1.1em;
+}
+
+#centerRegion .action-bar {
+  text-align: right;
+  margin: 3px 0 10px 0;
+}
+
+.dojoxGridSortNode{
+	font-family: Verdana, Geneva, sans-serif;
+}
+
+.dataDeleteButton {
+   background-image: url("/netcool/images/ac22_delete_24.gif");
+   background-position: 2px 50%;
+   background-repeat: no-repeat;
+   height:28px;
+   text-align: center;
+   vertical-align: middle;
+   width:28px;
+   display: block;
+}
+
+.dataEditButton {
+   background-image: url("/netcool/images/ac22_edit_24.png");
+   background-position: 2px 50%;
+   background-repeat: no-repeat;
+   height:28px;
+   text-align: center;
+   vertical-align: middle;
+   width:28px;
+   display: block;
+}
+
+.dataNewButton {
+   background-image: url("/netcool/images/ac22_new_24.png");
+   background-position: 2px 50%;
+   background-repeat: no-repeat;
+   height:28px;
+   text-align: center;
+   vertical-align: middle;
+   width:28px;
+   display: block;
+}
+.dataSaveButton {
+   background-image: url("/netcool/images/ac22_save_24.png");
+   background-position: 2px 50%;
+   background-repeat: no-repeat;
+   height:28px;
+   text-align: center;
+   vertical-align: middle;
+   width:28px;
+   display: block;
+}
+
+.dataRefreshButton {
+   background-image: url("/netcool/images/ac22_refresh_24.png");
+   background-position: 2px 50%;
+   background-repeat: no-repeat;
+   height:28px;
+   text-align: center;
+   vertical-align: middle;
+   width:28px;
+   display: block;
+}
+
+.listDialogue {
+   background-color: white;
+   border: 2px solid grey;
+   visibility: hidden;
+   position: absolute;
+   top: 80px;
+   left: 80px; 
+   height: 185px;
+   width:  450px;
+   padding: 10px;
+   margin-top: 10px;
+   margin-left: 10px;
+   z-index: 1;
+}
+
+.listDialogueVisible {
+   visibility: visible;
+}
+
+.listDialogueInnerContainer {
+   height: 200px;
+}
+
+.trackingfilterInput {
+   width: 80%;
+   height: 25px;
+   resize: none;
+}
+

@@ -1,0 +1,86 @@
+
+function JSON_ObjectStr_parse_ToIPL_byKeySet(jsonstr,keyset,iplObject) {
+jsonObjectClass = "com.ibm.json.java.JSONObject";
+jsonobj = JavaCall(jsonObjectClass,null,"parse",{jsonstr});
+lenkeys = length(keyset);
+iplObject = newObject();
+  j = 0;
+  while (j<lenkeys) {
+    thiskey = keyset[j];
+    iplObject[thiskey] = JavaCall(jsonObjectClass,jsonobj,"get",{thiskey});
+   j=j+1;
+  }
+}
+
+function JSON_ArrayStr_Parse_ToIPL(jsonstr,iplObject) {
+jsonArrayClass = "com.ibm.json.java.JSONArray";
+jsonarr = JavaCall(jsonArrayClass,null,"parse",{jsonstr});
+lenarray = JavaCall(jsonArrayClass,jsonarr,"size",{});
+iplObject = {};
+i=0;
+ while (i<lenarray){
+  element= JavaCall(jsonArrayClass,jsonarr,"get",{i});
+  iplObject = iplObject + element;
+  i=i+1;
+ }
+}
+
+
+function JSON_ArrayOfObjectsStr_Parse_ToIPL_byKeySet(jsonstr,keyset,iplObject) {
+jsonArrayClass = "com.ibm.json.java.JSONArray";
+jsonObjectClass = "com.ibm.json.java.JSONObject";
+jsonarr = JavaCall(jsonArrayClass,null,"parse",{jsonstr});
+lenarray = JavaCall(jsonArrayClass,jsonarr,"size",{});
+lenkeys = length(keyset);
+iplObject = {};
+i=0;
+ while (i<lenarray){
+  element= JavaCall(jsonArrayClass,jsonarr,"get",{i});
+  j = 0;
+  thisobject = newObject();
+  while (j<lenkeys) {
+    thiskey = keyset[j];
+    thisobject[thiskey] = JavaCall(jsonObjectClass,element,"get",{thiskey});
+   j=j+1;
+  }
+  iplObject = iplObject + thisobject;
+  i=i+1;
+ }
+}
+
+
+function JSON_Stringify_Object_FromIPL(iplObject,jsonstr) {
+  rtn = Keys(iplObject);
+  lengthOfKeys  = length(rtn);
+  count  = 0;
+  jsonstr = " { ";
+  while( count < lengthOfKeys ) {
+     keyValue = rtn[count];
+     value = iplObject[keyValue];
+     value = Trim(value);
+     lengthOfValue = Length(value);
+     value = Replace(value,"\\\"","\\\\\"",lengthOfValue);
+     if( count != 0 ) {
+         jsonstr = jsonstr + "," ;
+     }
+     jsonstr = jsonstr  + '"' +  keyValue + '" : "' + value + '"' ;
+     count = count + 1;
+  }
+  jsonstr = jsonstr + "}";
+}
+
+function JSON_Stringify_arrayOfObjects_FromIPL(arr,storeJSONstr) {
+  lengthOfArray = length(arr);
+  count  = 0;
+  storeJSONstr = '[';
+  while( count < lengthOfArray ) {
+     thisobj = arr[count];
+     JSON_Stringify_Object_FromIPL(thisobj,rtnString);
+     storeJSONstr = storeJSONstr + rtnString;
+     if ( count < ( lengthOfArray - 1 ) ) {
+         storeJSONstr = storeJSONstr + ",";
+     }
+     count = count + 1;
+  }
+  storeJSONstr = storeJSONstr + '] ';
+}

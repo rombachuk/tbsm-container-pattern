@@ -1,0 +1,153 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html style= "width: 100%;height: 100%;margin: 0;padding: 0;overflow: hidden;">
+<!-- *************************************************** {COPYRIGHT-TOP-RM} ***
+* Licensed Materials - Property of IBM
+* "Restricted Materials of IBM"
+* 5724-S43
+*
+* (C) Copyright IBM Corporation 2011. All Rights Reserved.
+*
+* US Government Users Restricted Rights - Use, duplication, or
+* disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+******************************************************** {COPYRIGHT-END-RM} -->
+<head>
+
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+<title>Operator View: <!--property:policy=rm_control--></title>
+
+  <!-- CLUSTER: <!--property:DefaultClusterName=TBSMCLUSTER--> -->
+
+  <link href="/impactAdmin/scripts/impactdojo/dojo/resources/dojo.css" type="text/css" rel="stylesheet">
+  <link href="/impactAdmin/scripts/impactdojo/dijit/themes/claro/claro.css" type="text/css" rel="stylesheet">
+  <link href="/impactAdmin/scripts/impactdojo/dojox/grid/resources/Grid.css" type="text/css" rel="stylesheet">
+  <link href="/impactAdmin/scripts/impactdojo/dojox/grid/resources/claroGrid.css" type="text/css" rel="stylesheet">
+  <link href="/impactAdmin/scripts/impactdojo/dojox/grid/enhanced/resources/EnhancedGrid.css" type="text/css" rel="stylesheet">
+  <link href="/impactAdmin/scripts/impactdojo/dojox/grid/enhanced/resources/claroEnhancedGrid.css" type="text/css" rel="stylesheet">
+  <link href="/opview/assets/rm/rm.css" type="text/css" rel="stylesheet">
+     <script> 
+      var listOfChoices = <!--showdata:var=listOfChoices type=scalar format=plain default="{items:[]}"-->;
+      var pchoice = "<!--showdata:var=pchoice type=scalar format=plain-->";
+      var listOfClasses = <!--showdata:var=listOfClasses type=scalar format=plain default="{items:[]}"-->;
+      var listOfTemplates = <!--showdata:var=listOfTemplates type=scalar format=plain default="{items:[]}"-->;
+      var listOfEventfields = <!--showdata:var=listOfEventfields type=scalar format=plain default="{items:[]}"-->;
+      var listOfOperators = <!--showdata:var=listOfOperators type=scalar format=plain default="{items:[]}"-->;
+      var pclass = "<!--showdata:var=pclass type=scalar format=plain-->";
+      var errorMessage = "<!--showdata:var=errorMessage type=scalar format=plain-->";
+      var clusterName = "<!--showdata:var=DefaultClusterName type=scalar format=plain default=''-->";
+  </script>
+ 
+  <script type="text/javascript"> var dojoConfig = {  packages: [{ name: 'rm',location: '/opview/assets/rm'}] }; </script>
+   <script type="text/javascript" src="/impactAdmin/scripts/impactdojo/dojo/dojo.js" data-dojo-config="async: 1, parseOnLoad: 1"></script>
+ 
+  <script type="text/javascript"> 
+      require([
+        "rm/init",
+        "dojo/ready",
+        "dojo/parser",
+        "dijit/layout/BorderContainer",
+        "dijit/layout/ContentPane",
+        "dojo/domReady!"], // wait until DOM is loaded
+        function(rminit,dReady){
+	    dReady(function(){
+            console.log('dojo is ready');
+            rminit(); 
+            });
+    });
+ </script>     
+</head>
+
+
+<body class="claro"   style= "width: 100%;height: 100%;margin: 0;padding: 0;overflow: hidden;">
+<div data-dojo-type="dijit/layout/BorderContainer" id="mainPane" data-dojo-props="design:'screenDesign'" style="width: 100%; height: 100%; border: none 0;">
+<div data-dojo-type="dijit/layout/ContentPane" id="leftRegion" data-dojo-props="region:'left'" style="width: 20%; height: 98%; min-height:90%; margin: 0px; padding-right: 5px">
+<h2>Search for Rules </h2>
+<dl>
+    <dt><label> Rule Scope:</label></dt>
+    <dd><div id="rulescope" ></div>
+</dl>
+<div>
+<button id="viewCriteriaButton" type="button" dojoType="dijit.form.Button">View Short</button>
+<button id="viewFullCriteriaButton" type="button" dojoType="dijit.form.Button">View Full</button>
+</div>
+</br>
+<div>
+<button id="addNewRuleButton" type="button" dojoType="dijit.form.Button">Add New Rule (from JSON)</button>
+</div>
+</br>
+<h2>Inspect Data </h2>
+<dl>
+    <dt><label> Event Fields:</label></dt>
+    <dd><div id="eventfields" ></div>
+</dl>
+<dl>
+    <dt><label> TBSM Templates:</label></dt>
+    <dd><div id="tbsmtemplates" ></div>
+</dl>
+</br>
+<dl>
+    <dt><label> Class Conversions:</label></dt>
+    <dd><div id="classconversions" ></div>
+</dl>
+<div>
+<button id="sortClassesNumericButton" type="button" dojoType="dijit.form.Button">Sort Num</button>
+<button id="sortClassesAlphaButton" type="button" dojoType="dijit.form.Button">Sort Alpha</button>
+</div>
+</br>
+</br>
+<div id="ActionResponseContainer" style="width: 100%">
+           </br>Status Messages</br>
+           <textarea id="actionResponse" rows=7 cols=25></textarea>
+</div>
+</div>
+<div dojoType="dijit/layout/ContentPane" id="centerRegion" data-dojo-props="region:'center'" style="width: 70%; height: 98%; min-height:90%">
+<div id="rulesDisplay" style="height:80%">
+<h2>Rules </h2>
+<p class="action-bar"></p>
+<dl>
+      <dt><label id="listItemsLabel"></label></dt>
+      <dd><div id="listItemsContainer" style="width:98%;height:90%;min-height:10%;position:relative"> </div></dd>
+      <dd><div id="addrulelikeDialogue" class="listDialogue">
+        <div id="addrulelikeDialogueInnerContainer" class="listDialogueInnerContainer" style="display:table">
+        <table>
+         <tr><td style="padding-bottom:10px" colspan=4> <label type="text" id="addrulelikeDialogueHeader" style="font-size:medium;font-weight:bold"></td></tr>
+         <tr ><td> RuleName</td><td id="addlknewruleprefix" style="width:175px;text-align:right"></td><td style="width:250px"><input type="text" name="addlknewruletext" id="addlknewruletext" style="width:245px"></td></tr>
+         <tr><td> Condition</td><td id="addlknewrulecondprefix" style="width:175px;text-align:right"></td><td style="width:250px"><input type="text" name="addlknewrulecond" id="addlknewrulecond" style="width:245px"></td><td style="text-align:left">.*'</td></tr>
+         <tr><td> Impact</td><td style="width:175px"></td><td><select id="addlknewimpact"><option value="Bad">Bad</option><option value="Marginal">Marginal</option></select></td></tr>
+        <tr><td style="padding-top:10px"></td> <td style="padding-top:10px;width:175px"></td>
+        <td style="padding-top:10px;width:250px">
+        <table><tr><td><div id="addrulelikeDialogueButton1div"> <button id="addrulelikeDialogueButton1" type="button" dojoType="dijit.form.Button"></button></div></td>
+        <td><div id="addrulelikeDialogueButton2div"> <button id="addrulelikeDialogueButton2" type="button" dojoType="dijit.form.Button"></button></div></td></tr></table></td>
+        <td style="padding-top:10px"> </tr></table></div>
+      </div></dd>
+      <dd><div id="modifyruleDialogue" class="listDialogue" style="width:650px">
+        <div id="modifyruleDialogueInnerContainer" class="listDialogueInnerContainer" style="display:table">
+        <table>
+         <tr><td style="padding-bottom:10px" colspan=4> <label type="text" id="modifyruleDialogueHeader" style="font-size:medium;font-weight:bold"></td></tr>
+         <tr><td> Classes</td><td id="modnewruleclassesprefix" style="width:175px;text-align:right"></td><td style="width:250px"><input type="text" name="modnewruleclasses" id="modnewruleclasses" style="width:445px"></td></tr>
+         <tr><td> Impact</td><td style="width:175px"></td><td><select id="modnewimpact"><option value="Bad">Bad</option><option value="Marginal">Marginal</option></select></td></tr>
+        <tr><td style="padding-top:10px"></td> <td style="padding-top:10px;width:175px"></td>
+        <td style="padding-top:10px;width:250px">
+        <table><tr><td><div id="modifyruleDialogueButton1div"> <button id="modifyruleDialogueButton1" type="button" dojoType="dijit.form.Button"></button></div></td>
+        <td><div id="modifyruleDialogueButton2div"> <button id="modifyruleDialogueButton2" type="button" dojoType="dijit.form.Button"></button></div></td></tr></table></td>
+        <td style="padding-top:10px"> </tr></table></div>
+      </div></dd>
+      <dd><div id="addnewruleDialogue" class="listDialogue" style="height: 600px; width:700px">
+        <div id="addnewruleDialogueInnerContainer" class="listDialogueInnerContainer" style="display:table">
+        <table>
+         <tr><td style="padding-bottom:10px" colspan=4> <label type="text" id="addnewruleDialogueHeader" style="font-size:medium;font-weight:bold"></td></tr>
+         <tr><td style="width:10px"></td><td id="addnewruleprefix" style="width:5px;text-align:right"></td><td style="width:5px"><textarea name="addnewruletext" id="addnewruletext" rows="30" cols="80"></textarea></td></tr>
+        <tr><td style="padding-top:10px"></td> <td style="padding-top:10px;width:5px"></td>
+        <td style="padding-top:10px;width:250px">
+        <table><tr><td style="width:150px"></td><td><div id="addnewruleDialogueButton1div"> <button id="addnewruleDialogueButton1" type="button" dojoType="dijit.form.Button"></button></div></td>
+        <td><div id="addnewruleDialogueButton2div"> <button id="addnewruleDialogueButton2" type="button" dojoType="dijit.form.Button"></button></div></td></tr></table></td>
+        <td style="padding-top:10px"> </tr></table></div>
+      </div></dd>
+</dl>
+</div>
+</div>
+
+<iframe id="hidden" name="hidden" style="display: none; width: 0px; height: 0px;"></iframe>
+
+</body>
+</html>

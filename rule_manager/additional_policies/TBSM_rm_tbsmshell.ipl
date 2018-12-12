@@ -1,0 +1,113 @@
+USE_SHARED_SCOPE;
+
+function TBSM_Reprocess_Events(NetcoolDB,filterlist) {
+  rpQuery = "update alerts.status set RAD_ServiceName = '', RAD_FilterIDList = '', RAD_RawInputLastValue = 6 where "+filterlist;
+  log("reprocessing for "+filterlist);
+  MyUpdate = DirectSQL(NetcoolDB, rpQuery, 'false');
+ }  
+
+function TBSM_Rule_Delete (tbsmDB,NetcoolDB,thisRule) {
+ i = 0;
+ lentemplate = length(thisRule.templates);
+ while (i < lentemplate) {
+   rulestatus = DirectSQL(tbsmDB,"select statename from tbsmbase.EVENTMAPPINGFILTERVIEW where statename = '" + thisRule.name + "' and servicetypename = '"+thisRule.templates[i].name+"' group by statename",'false');
+   if (length(rulestatus) = 1) {
+    del_string = String('deleteAttributeFromTemplate ("' + thisRule.templates[i].name + '","' + thisRule.name + '")'); 
+    log(del_string);
+    result = RemoteTBSMShell (del_string);
+   }
+   i=i+1;
+ }
+ format_Filter(thisRule.conditions,filterlist);
+ TBSM_Reprocess_Events(NetcoolDB,filterlist);
+} 
+
+function TBSM_Rule_Add (tbsmDB,NetcoolDB,thisRule) {
+ format_Class(NetcoolDB,thisRule.classes,classList);
+ format_Threshold(thisRule.conditions,fieldList,operatorList,conditionList);
+ i = 0;
+ lentemplate = length(thisRule.templates);
+ while (i < length(thisRule.templates)) {
+  rulestatus = DirectSQL(tbsmDB,"select statename from tbsmbase.EVENTMAPPINGFILTERVIEW where statename = '" + thisRule.name + "' and servicetypename = '"+thisRule.templates[i].name+"' group by statename",'false');
+  if (length(rulestatus) = 0) {
+   string1 = String('addNewRawAttribute("' + thisRule.templates[i].name + '","' + thisRule.name + '",' +
+                    ' new String[] { ' + classList + ' },new String[] { "' + thisRule.identifier + '" },0,"ObjectServer")');
+   string2 = String( 'addRawAttributeThresholdSet("' + thisRule.templates[i].name + '","' + thisRule.name + '","' + thisRule.impact + '",' +
+                      'null, new String[] { ' + fieldList + ' },new String[] { ' + operatorList + ' },new String[] { ' + conditionList + ' },0)');
+   string3 = String('addUserPreferencesForTemplate ("' + thisRule.templates[i].name + '","' + thisRule.name + '","")');
+   newrule_string = string1 + ";\n" + string2 + ";\n" + string3 + ";\n";
+   log(newrule_string);
+   result1 = RemoteTBSMShell(newrule_string);
+   thisAutopop = thisRule.templates[i].autopop;
+   thisExclude = thisAutopop[0].exclude;
+   format_Exclude(thisExclude,exclude);
+   createap_string = String('createAutoPopulationRule("' + thisAutopop[0].template + '","' + thisAutopop[0].display_naming + '","' + thisAutopop[0].service_naming +
+                     '","Standard",true,"ADD","' + exclude + '","' + thisRule.name + '","ap_' + thisRule.name + '",' + 'null,null,null,null,null,null,"","",null,null,"RawAttributeFeed")') ;
+   ap_string = createap_string + ";\n";
+   k = 1;
+   while (k < length(thisAutopop)) {
+    thisExclude = thisAutopop[k].exclude;
+    format_Exclude(thisExclude,exclude);
+    addap_string =  String('addToAutoPopulationRule("' + thisAutopop[0].template + '",null,"' + thisAutopop[k].template + '","' + thisAutopop[k].service_naming + '","' + thisAutopop[k].display_naming +
+                    '","Standard",true,"ADD","' + exclude + '","ap_' + thisRule.name + '",' + 'null,null,null,null,null,null,"","",null,null)') ;
+    ap_string = ap_string + addap_string + ";\n";
+    k=k+1;
+   }
+  log(ap_string);
+  result2 = RemoteTBSMShell(ap_string); 
+  }
+ i=i+1;
+ }
+ format_Filter(thisRule.conditions,filterlist);
+ TBSM_Reprocess_Events(NetcoolDB,filterlist);
+}
+
+function format_Exclude(istring,ostring) {
+ if (istring = '') { ostring = 'true';}
+ else {ostring = String(istring);}
+}
+
+function format_Class(NetcoolDB,classes,cstring) {
+ clindex = 0;
+ cstring = '';
+ while (clindex < length(classes)) {
+      convQuery = "select Conversion from alerts.conversions where Colname = 'Class' and Value = " + classes[clindex];
+      MyConversion = DirectSQL(NetcoolDB,convQuery,'false');
+      if (length(MyConversion) = 1) {
+       if (length(cstring) = 0){ cstring = '"' + MyConversion[0].Conversion + '(' + classes[clindex] + ')"'; }
+       else { cstring = cstring + ',"' + MyConversion[0].Conversion + '(' + classes[clindex] + ')"'; }
+      }
+     clindex=clindex+1;
+ }
+}
+
+function format_Threshold(conditions,fstring,ostring,cstring) {
+ i = 0; fstring = ''; ostring = ''; cstring = '';
+ while (i < length(conditions)) {
+       if (length(cstring) = 0) { 
+              fstring = '"' + conditions[i].field + '"'; 
+              ostring = '"' + conditions[i].operator + '"'; 
+              cstring = '"' + conditions[i].value + '"'; 
+       }
+       else { 
+              fstring = fstring + ',"' + conditions[i].field + '"'; 
+              ostring = ostring + ',"' + conditions[i].operator + '"'; 
+              cstring = cstring + ',"' + conditions[i].value + '"'; 
+       }
+  i=i+1;
+ }
+}
+
+function format_Filter(conditions,fstring) {
+ i = 0; fstring = ''; value = ''; 
+ while (i < length(conditions)) {
+       if (length(fstring) = 0) { 
+              fstring = "(" + conditions[i].field + " " + conditions[i].operator + " " + conditions[i].value +")"; 
+       }
+       else { 
+              fstring = fstring + " AND (" + conditions[i].field + " " + conditions[i].operator + " " + conditions[i].value + ")"; 
+       }
+  i=i+1;
+ }
+}
+

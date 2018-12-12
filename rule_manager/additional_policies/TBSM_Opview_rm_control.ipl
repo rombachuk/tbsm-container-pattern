@@ -1,0 +1,109 @@
+/******************************************************* {COPYRIGHT-TOP-RM} ***
+ * Licensed Materials - Property of IBM
+ * "Restricted Materials of IBM"
+ * 5724-S43
+ *
+ * (C) Copyright IBM Corporation 2011. All Rights Reserved.
+ *
+ * US Government Users Restricted Rights - Use, duplication, or
+ * disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+ ******************************************************* {COPYRIGHT-END-RM} **/
+function key1_naming(input,output) {
+if (input = '') { output = 'ALL';}
+else { output = ToUpper(input);}
+/* 
+add specific eventfield conversion rules here eg
+if (RExtract(output,'.*(5G).*') = '5G') { output = '5G';}
+*/
+}
+
+function key2_naming(input,output) {
+if (input = '') { output = 'ALL';}
+else { output = ToUpper(input);}
+/* 
+add specific eventfield conversion rules here eg
+*/
+}
+
+function key3_naming(input,output) {
+if (input = '') { output = 'ANY';}
+else { output = ToUpper(input);}
+/* 
+add specific eventfield conversion rules here eg
+*/
+}
+
+RulesDB = "TBSMDatabase";
+omniDB = "ObjectServer_DS";
+/* 
+assign key to incoming parameters if using event rule - otherwise use defaults
+eg for inbound parameters from selected event, use @field eg
+key1 = @Location;
+key2 = @AlertGroup;
+key3 = @Node;
+
+alternately set default values here with strings, best for NOI_WebGui which does 
+support right mouse tools easily
+*/
+key1 = '';
+key2 = '';
+key3 = '';
+key1_naming(key1,pkey1);
+key2_naming(key2,pkey2);
+key3_naming(key3,pkey3);
+pchoice = pkey1+'-'+pkey2+'-'+pkey3;
+choices = {};
+myChoices = DirectSQL(RulesDB,"select key1,key2,key3 from rulemgr_rule group by key1,key2,key3 order by key1,key2,key3",false);
+i = 0;
+while (i < Num) {
+  thisChoice = NewObject();
+  thisChoice.id = myChoices[i].key1+'-'+myChoices[i].key2+'-'+myChoices[i].key3;
+  thisChoice.key1 = myChoices[i].key1;
+  thisChoice.key2 = myChoices[i].key2;
+  thisChoice.key3 = myChoices[i].key3;
+  choices = choices + thisChoice;
+  i=i+1;
+}
+rm_json.JSON_Stringify_arrayOfObjects_FromIPL(choices, listOfChoices);
+
+templates = {};
+myTemplates = DirectSQL(RulesDB,"select servicetypename from tbsmbase.servicetype group by servicetypename order by servicetypename",false);
+i = 0;
+while (i < Num) {
+  thisTemplate = NewObject();
+  thisTemplate.id = myTemplates[i].servicetypename;
+  templates = templates + thisTemplate;
+  i=i+1;
+}
+rm_json.JSON_Stringify_arrayOfObjects_FromIPL(templates, listOfTemplates);
+
+classes = {};
+myClasses = DirectSQL(omniDB,"select Value,Conversion from alerts.conversions where Colname='Class' order by Value",false);
+i = 0;
+while (i < Num) {
+  thisClass = NewObject();
+  thisClass.id = myClasses[i].Conversion + '(' + myClasses[i].Value + ')';
+  thisClass.value = myClasses[i].Value;
+  thisClass.conversion = myClasses[i].Conversion;
+  classes = classes + thisClass;
+  i=i+1;
+}
+rm_json.JSON_Stringify_arrayOfObjects_FromIPL(classes, listOfClasses);
+
+  query= 'select * from alerts.status where Serial in (select max(Serial) from alerts.status)';
+  DirectSQL(omniDB, query, false);
+  kys  = keys(DataItems[0]);
+  arryOfKeys  = {};
+  totalLen = length(kys);
+  count = 6; //first 6 fields of a select* can be ignored as they are not visible to user
+  while( count < totalLen ) {
+  obj = NewObject();
+     obj['name'] = kys[count];
+     obj['value'] = kys[count];
+     arryOfKeys = arryOfKeys + obj;
+     count = count + 1;
+  }
+rm_json.JSON_Stringify_arrayOfObjects_FromIPL(arryOfKeys,listOfEventfields);
+log("rm_control finished");
+opview_servlet_prefix="";
+opview_stylesheet="opview.css";

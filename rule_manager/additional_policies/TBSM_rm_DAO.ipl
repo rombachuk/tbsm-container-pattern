@@ -1,0 +1,150 @@
+/******************************************************* {COPYRIGHT-TOP-RM} ***
+ * Licensed Materials - Property of IBM
+ * "Restricted Materials of IBM"
+ * 5724-S43
+ *
+ * (C) Copyright IBM Corporation 2011. All Rights Reserved.
+ *
+ * US Government Users Restricted Rights - Use, duplication, or
+ * disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+ ******************************************************* {COPYRIGHT-END-RM} **/
+
+function DAO_Rules_processGetResponse(tbsmDB,qresponse,oprules) {
+oprules = {};
+i = 0;
+while (i < length(qresponse)) {
+  thisRule = newObject();
+  thisRule.name = qresponse[i].name;
+  thisRule.jsondoc = qresponse[i].jsondoc;
+  thisRule.status = 'inactive';
+  rulestatus = DirectSQL(tbsmDB,"select statename from tbsmbase.EVENTMAPPINGFILTERVIEW where statename = '" + thisRule.name + "' group by statename",'false');
+  if (length(rulestatus) >= 1) { thisRule.status = 'active'; }
+  oprules = oprules + thisRule;
+  i = i+1;
+ }
+}
+
+function DAO_Rules_GetByKeys(RulesDB,tbsmDB,parameters,results) {
+myRules = DirectSQL(RulesDB,"select name,key1,key2,key3,id,jsondoc from rulemgr_rule where key1 = '"+
+          parameters.key1+"' and key2='"+parameters.key2+"' and key3 = '"+parameters.key3+"' order by name",false);
+DAO_Rules_processGetResponse(tbsmDB,myRules,rules);
+rm_json.JSON_Stringify_arrayOfObjects_FromIPL(rules, results);
+}
+
+function format_Classes(istring,ostring) {
+ istringparts = Split(istring,',');
+ i=0; ostring='';
+ while (i<length(istringparts)) {
+  if (ostring = '') { ostring = ostring + '"'+istringparts[i]+'"';}
+  else { ostring = ostring + ',"'+istringparts[i]+'"';}
+  i=i+1;
+ }
+}
+
+function DAO_Rules_Modify(RulesDB,parameters)  {
+     tQuery = "select name from rulemgr_rule where name = '" + parameters.name + "' group by name";
+     MyRule = DirectSQL(RulesDB,tQuery,'false');
+     if (Num != 1) {
+         log("Cannot modify rule [" + parameters.name + "] as it is missing ");
+   }
+   else {
+       format_Classes(parameters.oldclasses,oldclasses);
+       format_Classes(parameters.newclasses,newclasses);
+       updateruleq = "update rulemgr_rule set rule ="+ 
+       "replace(replace(rule,'"+oldclasses+"','"+newclasses+"'),"+ "'\""+parameters.oldimpact+"\"','\""+parameters.newimpact+"\"') where name='"+parameters.name+"'";
+       DirectSQL(RulesDB,updateruleq,'false');  
+  }
+}
+
+function DAO_Rules_Add_Like(RulesDB,parameters)  {
+     tQuery = "select name from rulemgr_rule where name = '" + parameters.name + "' group by name";
+     MyRule = DirectSQL(RulesDB,tQuery,'false');
+     if (Num = 1) {
+         log("Cannot add rule [" + parameters.newrule + "] as it already exists ");
+   }
+   else {
+       newruleq = "insert into rulemgr_rule (name,key1,key2,key3,id,jsondoc) select '"+parameters.newrule+"' as name,'"+parameters.key1+"' as key1,'"+parameters.key2+
+       "'as key2,'"+parameters.key3+"' as key3,'"+parameters.newid+"' as id,"+
+       "replace(replace(replace(replace(jsondoc,'"+parameters.likerule+"','"+parameters.newrule+"'),'"+parameters.likeclassifier+"','"+parameters.newclassifier+
+       "'),'\""+parameters.likeimpact+"\"','\""+parameters.newimpact+"\"'),'\""+parameters.likeid+"\"','\""+parameters.newid+"\"') as jsondoc from rulemgr_rule where name='"+parameters.likerule+"'";
+       DirectSQL(RulesDB,newruleq,'false');
+  }
+}
+
+function DAO_Rules_Add_New(RulesDB,parameters,jsondoc)  {
+     tQuery = "select name from rulemgr_rule where name = '" + parameters.name + "' group by name";
+     MyRule = DirectSQL(RulesDB,tQuery,'false');
+     if (Num = 1) {
+         log("Cannot add rule [" + parameters.name + "] as it already exists ");
+   }
+   else {
+       newruleq = "insert into rulemgr_rule (name,key1,key2,key3,id,jsondoc) values( '"+parameters.name+"','"+parameters.key1+"','"+parameters.key2+ "','"+parameters.key3+"','"+parameters.id+"','{}')";
+       DirectSQL(RulesDB,newruleq,'false');
+       sql_quoted_jsondoc = Replace(jsondoc,"'","''",999999);
+       updaterq = "update rulemgr_rule set jsondoc = '"+sql_quoted_jsondoc+ "' where name = '"+parameters.name+"'";
+       DirectSQL(RulesDB,updaterq,'false');
+  }
+}
+
+
+function DAO_Rules_RuleStr_ByName_ToIPL( RulesDB,name,iplObject) {
+ thisFetch = DirectSQL(RulesDB, "select jsondoc from rulemgr_rule where name = '"+name+"'",'false'); 
+ if (length(thisFetch) = 1) {
+   DAO_Rules_JSONRuleStr_Parse_ToIPL( RulesDB,thisFetch[0].jsondoc,iplObject); 
+ }
+ else {
+   iplObject = {};
+ }
+}
+
+function DAO_Rules_JSONRuleStr_Parse_ToIPL( RulesDB,jsondoc,iplObject) {
+ iplObject = NewObject();
+   ovw_keyset = {'name','key1','key2','key3','id','rule'};
+   rm_json.JSON_ObjectStr_parse_ToIPL_byKeySet(jsondoc,ovw_keyset,ruleovw); 
+   config_keyset = {"impact","identifier","classes","conditions","templates"};
+   rm_json.JSON_ObjectStr_parse_ToIPL_byKeySet(String(ruleovw.rule),config_keyset,ruleconfig);
+   rm_json.JSON_ArrayStr_parse_ToIPL(String(ruleconfig.classes),classes);
+   conditions_keyset = {'field','operator','value'};
+   rm_json.JSON_ArrayOfObjectsStr_parse_ToIPL_byKeySet(String(ruleconfig.conditions),conditions_keyset,conditions);
+   templates_keyset = {'name','autopop'};
+   rm_json.JSON_ArrayOfObjectsStr_parse_ToIPL_byKeySet(String(ruleconfig.templates),templates_keyset,templateArray); 
+   autopop_keyset = {'template','service_naming','display_naming','exclude'};
+   k=0;
+   templates={};
+   while (k<length(templateArray)) {
+    thistemplate = NewObject();
+    thistemplate.name = templateArray[k].name;
+    rm_json.JSON_ArrayOfObjectsStr_parse_ToIPL_byKeySet(String(templateArray[k].autopop),autopop_keyset,thistemplate.autopop);
+    templates = templates + thistemplate;
+    k=k+1;
+   }
+  iplObject.name = ruleovw.name;
+  iplObject.key1 = ruleovw.key1;
+  iplObject.key2 = ruleovw.key2;
+  iplObject.key3 = ruleovw.key3;
+  iplObject.id = ruleovw.id;
+  iplObject.identifier = ruleconfig.identifier;
+  iplObject.impact = ruleconfig.impact;
+  iplObject.conditions = conditions;
+  iplObject.classes = classes;
+  iplObject.templates = templates;
+}
+
+function DAO_Rules_Deactivate( RulesDB,tbsmDB,NetcoolDB,parameters) {
+     DAO_Rules_RuleStr_ByName_ToIPL( RulesDB,parameters.name,thisRule);
+     rm_tbsmshell.TBSM_Rule_Delete(tbsmDB,NetcoolDB,thisRule);
+}
+
+function DAO_Rules_Activate( RulesDB,tbsmDB,NetcoolDB,parameters) {
+     DAO_Rules_RuleStr_ByName_ToIPL( RulesDB,parameters.name,thisRule);
+     rm_tbsmshell.TBSM_Rule_Add(tbsmDB,NetcoolDB,thisRule);
+} 
+
+function DAO_Rules_Delete( RulesDB,tbsmDB,NetcoolDB,parameters) {
+     rulestatus = DirectSQL(tbsmDB,"select statename from tbsmbase.EVENTMAPPINGFILTERVIEW where statename = '" + parameters.name + "' group by statename",'false');
+     if (length(rulestatus) = 1) {
+      DAO_Rules_RuleStr_ByName_ToIPL( RulesDB,parameters.name,thisRule);
+      rm_tbsmshell.TBSM_Rule_Delete(tbsmDB,NetcoolDB,thisRule);
+     }
+     thisDelete = DirectSQL(RulesDB, "delete from rulemgr_rule where name = '"+parameters.name+"'",'false'); 
+} 

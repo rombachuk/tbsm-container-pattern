@@ -1,0 +1,71 @@
+/******************************************************* {COPYRIGHT-TOP-RM2} ***
+ * Licensed Materials - Property of IBM
+ * "Restricted Materials of IBM"
+ * 5724-S43
+ *
+ * (C) Copyright IBM Corporation 2011. All Rights Reserved.
+ *
+ * US Government Users Restricted Rights - Use, duplication, or
+ * disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+ ******************************************************* {COPYRIGHT-END-RM2} **/
+RulesDB='TBSMDatabase';
+TBSMDB='TBSMDatabase';
+NetcoolDB='ObjectServer_DS';
+action = @action;
+
+if (action = 'activate') {
+keyset = {'key1','key2','key3','id','name'};
+rm_json.JSON_ObjectStr_parse_ToIPL_byKeySet(@parameters,keyset,actionparameters);
+log(action+" actionparameters=["+actionparameters+"]");
+rm_DAO.DAO_Rules_Activate(RulesDB,TBSMDB,NetcoolDB,actionparameters);
+rm_DAO.DAO_Rules_GetByKeys(RulesDB,TBSMDB,actionparameters,results);
+}
+
+if (action = 'addnew' ){
+ rm_DAO.DAO_Rules_JSONRuleStr_Parse_ToIPL( RulesDB,@parameters,actionparameters);
+log(action+" selected actionparameters=["+actionparameters.name+"]");
+ rm_DAO.DAO_Rules_Add_New(RulesDB,actionparameters,@parameters);
+ rm_DAO.DAO_Rules_GetByKeys(RulesDB,TBSMDB,actionparameters,results);
+}
+
+if (action = 'addrulelike' ){
+keyset = {'key1','key2','key3','likerule','likeid','likeclassifier','likeimpact', 'newrule','newid','newruledescription','newclassifier','newimpact'};
+rm_json.JSON_ObjectStr_parse_ToIPL_byKeySet(@parameters,keyset,actionparameters);
+log(action+" actionparameters=["+actionparameters+"]");
+rm_DAO.DAO_Rules_Add_Like(RulesDB,actionparameters);
+rm_DAO.DAO_Rules_GetByKeys(RulesDB,TBSMDB,actionparameters,results);
+}
+
+if (action = 'deactivate') {
+keyset = {'key1','key2','key3','id','name'};
+rm_json.JSON_ObjectStr_parse_ToIPL_byKeySet(@parameters,keyset,actionparameters);
+log(action+" actionparameters=["+actionparameters+"]");
+rm_DAO.DAO_Rules_Deactivate(RulesDB,TBSMDB,NetcoolDB,actionparameters);
+rm_DAO.DAO_Rules_GetByKeys(RulesDB,TBSMDB,actionparameters,results);
+}
+
+if (action = 'delete') {
+keyset = {'key1','key2','key3','id','name'};
+rm_json.JSON_ObjectStr_parse_ToIPL_byKeySet(@parameters,keyset,actionparameters);
+log(action+" actionparameters=["+actionparameters+"]");
+rm_DAO.DAO_Rules_Delete(RulesDB,TBSMDB,NetcoolDB,actionparameters);
+rm_DAO.DAO_Rules_GetByKeys(RulesDB,TBSMDB,actionparameters,results);
+}
+
+if (action = 'fetchrules') {
+keyset = {'key1','key2','key3'};
+rm_json.JSON_ObjectStr_parse_ToIPL_byKeySet(@parameters,keyset,actionparameters);
+log(action+" actionparameters=["+actionparameters+"]");
+rm_DAO.DAO_Rules_GetByKeys(RulesDB,TBSMDB,actionparameters,results);
+}
+
+if (action = 'modify' ){
+keyset = {'key1','key2','key3','id','name','oldclasses','oldimpact', 'newclasses','newimpact'};
+rm_json.JSON_ObjectStr_parse_ToIPL_byKeySet(@parameters,keyset,actionparameters);
+log(action+" actionparameters=["+actionparameters+"]");
+rm_DAO.DAO_Rules_Modify(RulesDB,actionparameters);
+rm_DAO.DAO_Rules_GetByKeys(RulesDB,TBSMDB,actionparameters,results);
+}
+
+opview_servlet_prefix="";
+opview_stylesheet="opview.css";
