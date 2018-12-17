@@ -1,7 +1,7 @@
 
 set serveroutput on @
 
-call populate_ran_site_info ()  @
+call populate_l3_info ()  @
 
 commit work @
 

@@ -1,0 +1,199 @@
+########################################################################
+#
+#       Licensed Materials - Property of IBM
+#       
+#       
+#       
+#       (C) Copyright IBM Corp. 2005. All Rights Reserved
+#       
+#       US Government Users Restricted Rights - Use, duplication
+#       or disclosure restricted by GSA ADP Schedule Contract
+#       with IBM Corp.
+#
+# 11-12-14 James Williams, ATG - Simnet Rules used for BAC NOI Demo
+# 04-01-14 James Williams, ATG - Added Locations and changed Severities
+#
+#######################################################################
+
+array myapps;
+
+if( match( @Manager, "ProbeWatch" ) )
+{
+        switch(@Summary)
+        {
+        case "Running ...":
+                @Severity = 1
+                @AlertGroup = "probestat"
+                @Type = 2
+        case "Going Down ...":
+                @Severity = 5
+                @AlertGroup = "probestat"
+                @Type = 1
+        default:
+                @Severity = 1
+        }
+        @AlertKey = @Agent
+        @Summary = @Agent + " probe on " + @Node + ": " + @Summary
+}
+else
+{
+	@Manager	= "Simnet Probe"
+	@Class		= 3300
+	@Node 		= $Node
+	@Agent 		= $Agent
+	@AlertGroup 	= $Group
+	@Summary 	= $Summary
+	@Severity 	= $Severity
+        @BSM_Identity   = "Simulated Probe Events"
+
+        # Assign AlertGroup to Application Name
+        $num_fields = split($Node,myapps,"-")
+        @AlertGroup = myapps[2]
+        @AlertKey = myapps[1]
+      
+        if ( regmatch($Node, ".*cfp.*")) {
+          @Location = "Charlotte"
+        }
+
+        if ( regmatch($Node, ".*app01.*")) {
+          @Location = "Dallas"
+        }
+
+        if ( regmatch($Node, ".*app02.*")) {
+          @Location = "Dallas"
+        }
+
+        if ( regmatch($Node, ".*app03.*")) {
+          @Location = "Chicago"
+        }
+
+        if ( regmatch($Node, ".*app04.*")) {
+          @Location = "Chicago"
+        }
+
+        if ( regmatch($Node, ".*app05.*")) {
+          @Location = "Chicago"
+        }
+
+        if ( regmatch($Node, ".*app06.*")) {
+          @Location = "Seattle"
+        }
+
+        if ( regmatch($Node, ".*app07.*")) {
+          @Location = "LosAngeles"
+        }
+
+        if ( regmatch($Node, ".*app08.*")) {
+          @Location = "LosAngeles"
+        }
+
+        if ( regmatch($Node, ".*app09.*")) {
+          @Location = "LosAngeles"
+        }
+
+        if ( regmatch($Node, ".*app10.*")) {
+          @Location = "Cleveland"
+        }
+
+        if ( regmatch($Node, ".*app11.*")) {
+          @Location = "Cleveland"
+        }
+
+        if ( regmatch($Node, ".*app12.*")) {
+          @Location = "KansasCity"
+        }
+
+        if ( regmatch($Node, ".*app13.*")) {
+          @Location = "KansasCity"
+        }
+
+        if ( regmatch($Node, ".*app14.*")) {
+          @Location = "KansasCity"
+        }
+
+        if ( regmatch($Node, ".*app15.*")) {
+          @Location = "Boston"
+        }
+
+        if ( regmatch($Node, ".*app16.*")) {
+          @Location = "Boston"
+        }
+
+        if ( regmatch($Node, ".*app17.*")) {
+          @Location = "Boston"
+        }
+
+        if ( regmatch($Node, ".*app18.*")) {
+          @Location = "Raleigh"
+        }
+
+        if ( regmatch($Node, ".*app19.*")) {
+          @Location = "Atlanta"
+        }
+
+        if ( regmatch($Node, ".*app20.*")) {
+          @Location = "Atlanta"
+        }
+
+
+	if (nmatch($Summary, "Port failure"))
+	{
+		#@AlertKey = $PortNumber
+               switch ($PortNumber) {
+                   case "1":
+                     @Summary = "JVM CPU Utilitzation High 75%"
+                     @Service = "App"
+                     @Severity = 3
+                   case "2":
+		     @Summary = "Login Transaction Response time high 5secs"
+                     @Service = "Trans"
+                     @Severity = 4
+                   case "3":
+                     @Summary = "A Web Site received too many requests per second."
+                     @Service = "Web"
+                     @Severity = 3 
+                   case "4":
+                     @Summary = "DB2 CPU Utilisation High 75 %"
+                     @Service = "DB"
+                     @Severity = 3 
+                   default:
+                     @Summary = "Critical Application Error"
+                     @Severity = 5
+                     @Service = "App"
+               }
+	}
+	else if (nmatch($Summary, "Diskspace"))
+	{
+	#	@AlertKey = $PercentFull + "% full"
+                @Service = "OS"
+                @Summary = "Diskspace Alert "+$PercentFull + "% full"
+	}
+
+	if(regmatch($Summary, ".*Down.*")){
+		@Identifier = "Down" + @Identifier 
+		@Type = 1
+                @Severity = 5
+                @Service = "Network"
+	}
+	if(regmatch($Summary, ".*Up.*")){
+		@Type = 2
+                @Severity =  1             
+                @Service = "Network"
+	}
+
+	if(regmatch($Summary, ".*offline.*")){
+		@Identifier = "offline" + @Identifier 
+		@Type = 1
+                @Service = "VS"
+                @Severity = 5
+                @Summary = "A Virtual Machine has gone offline."
+	}
+	if(regmatch($Summary, ".*online.*")){
+		@Type = 2
+                @Service = "VS"
+                @Severity = 1        
+                @Summary = "A Virtual Machine has come online."
+	}
+	@Identifier 	= $Node + $Agent + $Severity + $AlertGroup + $AlertKey
+}
+
