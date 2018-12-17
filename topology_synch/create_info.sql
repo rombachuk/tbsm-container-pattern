@@ -1,0 +1,205 @@
+
+drop table L3_INFO @
+
+create TABLE L3_INFO (
+L3 VARCHAR(64) NOT NULL, 
+L3TYPE VARCHAR(64), 
+REGION VARCHAR(64), 
+L4 VARCHAR(64), 
+OPSTATE_S1 VARCHAR(64), 
+OPSTATE_S2 VARCHAR(64), 
+OPSTATE_S3 VARCHAR(64), 
+GEO_LOCATION VARCHAR(64), 
+GEO_AREA VARCHAR(64), 
+GEO_COORDINATES VARCHAR(64), 
+ACCESS VARCHAR(128),
+PRIORITY VARCHAR(32),
+BUSINESS_QUALIFIER1 VARCHAR(64),
+BUSINESS_QUALIFIER2 VARCHAR(64),
+BUSINESS_QUALIFIER3 VARCHAR(64),
+BUSINESS_QUALIFIER4 VARCHAR(64),
+PRIMARY KEY (L3)
+) @
+
+create or replace procedure populate_l3_info () 
+LANGUAGE SQL
+BEGIN
+DECLARE v_L3 VARCHAR(64) ; 
+DECLARE v_L3TYPE VARCHAR(64); 
+DECLARE v_REGION VARCHAR(64); 
+DECLARE v_L4 VARCHAR(64); 
+DECLARE v_OPSTATE_S1 VARCHAR(64); 
+DECLARE v_OPSTATE_S2 VARCHAR(64); 
+DECLARE v_OPSTATE_S3 VARCHAR(64); 
+DECLARE v_GEO_LOCATION VARCHAR(64); 
+DECLARE v_GEO_AREA VARCHAR(64); 
+DECLARE v_GEO_COORDINATES VARCHAR(64); 
+DECLARE v_ACCESS VARCHAR(128);
+DECLARE v_PRIORITY VARCHAR(32);
+DECLARE v_BUSINESS_QUALIFIER1 VARCHAR(64);
+DECLARE v_BUSINESS_QUALIFIER2 VARCHAR(64);
+DECLARE v_BUSINESS_QUALIFIER3 VARCHAR(64);
+DECLARE v_BUSINESS_QUALIFIER4 VARCHAR(64);
+DECLARE v_cnts1l1 INTEGER ;
+DECLARE v_cnts2l1 INTEGER ;
+DECLARE v_cnts3l1 INTEGER ;
+DECLARE v_count,v_numl3,v_commitcount INTEGER DEFAULT 0;
+
+DECLARE c1 CURSOR WITH HOLD FOR 
+  SELECT  l3 from  l1_s2 group by l3
+  UNION SELECT  l3 from  l1_s3 group by l3
+  UNION SELECT  l3 from  l1_s1 group by l3;
+
+
+SELECT COUNT(*) INTO v_numl3 from  
+  (SELECT  l3 from  l1_s2 group by l3
+   UNION SELECT  l3 from  l1_s3 group by l3
+   UNION SELECT  l3 from  l1_s1 group by l3);
+
+
+ call DBMS_OUTPUT.PUT_LINE('Num L3 = ' || v_numl3);
+OPEN c1;
+WHILE v_count < v_numl3
+DO
+ SET v_cnts1l1 = 0;
+ SET v_cnts2l1 = 0;
+ SET v_cnts3l1 = 0;
+
+ SET v_L3 = ''   ; 
+ SET v_L3TYPE = ''    ; 
+ SET v_REGION = ''    ; 
+ SET v_L4 = ''    ; 
+ SET v_OPSTATE_S1 = ''    ; 
+ SET v_OPSTATE_S2 = ''    ; 
+ SET v_OPSTATE_S3 = ''    ; 
+ SET v_GEO_LOCATION = ''    ; 
+ SET v_GEO_AREA = ''    ; 
+ SET v_GEO_COORDINATES = ''    ; 
+ SET v_ACCESS = ''    ;
+ SET v_PRIORITY = ''    ;
+ SET v_BUSINESS_QUALIFIER1 = ''    ;
+ SET v_BUSINESS_QUALIFIER2 = ''    ;
+ SET v_BUSINESS_QUALIFIER3 = ''    ;
+ SET v_BUSINESS_QUALIFIER4 = ''    ;
+
+ FETCH c1 INTO v_L3;
+
+ SELECT COUNT(*) INTO v_cnts1l1 FROM l1_s1 WHERE l3 = v_l3 ; 
+ SELECT COUNT(*) INTO v_cnts2l1 FROM l1_s2 WHERE l3 = v_l3 ; 
+ SELECT COUNT(*) INTO v_cnts3l1 FROM l1_s3 WHERE l3 = v_l3 ; 
+
+ IF ((v_cnts1l1 > 0) and (v_cnts2l1 > 0) and (v_cnts3l1 > 0)) THEN SET v_l3type = 'S1S2S3'; END IF;
+ IF ((v_cnts1l1 > 0) and (v_cnts2l1 > 0) and (v_cnts3l1 = 0)) THEN SET v_l3type = 'S1S2'; END IF;
+ IF ((v_cnts1l1 > 0) and (v_cnts2l1 = 0) and (v_cnts3l1 > 0)) THEN SET v_l3type = 'S1S3'; END IF;
+ IF ((v_cnts1l1 = 0) and (v_cnts2l1 > 0) and (v_cnts3l1 > 0)) THEN SET v_l3type = 'S2S3'; END IF;
+ IF ((v_cnts1l1 > 0) and (v_cnts2l1 = 0) and (v_cnts3l1 = 0)) THEN SET v_l3type = 'S1only'; END IF;
+ IF ((v_cnts1l1 = 0) and (v_cnts2l1 > 0) and (v_cnts3l1 = 0)) THEN SET v_l3type = 'S2only'; END IF;
+ IF ((v_cnts1l1 = 0) and (v_cnts2l1 = 0) and (v_cnts3l1 > 0)) THEN SET v_l3type = 'S3only'; END IF;
+
+ IF (v_cnts1l1 > 0) THEN
+ SELECT OPSTATUS
+ INTO   v_OPSTATE_S1 
+ FROM l1_s1 WHERE L3 = v_L3 and  L1 in 
+ (SELECT MIN(l1) FROM l1_s1 WHERE L3 = v_l3);
+ END IF;
+
+ IF (v_cnts2l1 > 0) THEN
+ SELECT OPSTATUS
+ INTO   v_OPSTATE_S2 
+ FROM l1_s2 WHERE L3 = v_L3 and  L1 in 
+ (SELECT MIN(l1) FROM l1_s2 WHERE L3 = v_l3);
+ END IF;
+
+ IF (v_cnts3l1 > 0) THEN
+ SELECT OPSTATUS
+ INTO   v_OPSTATE_S3 
+ FROM l1_s3 WHERE L3 = v_L3 and  L1 in 
+ (SELECT MIN(l3) FROM l1_s3 WHERE L3 = v_l3);
+ END IF;
+
+
+ IF (v_cnts1l1 > 0) THEN
+ SELECT REGION,GEO_LOCATION,GEO_AREA,GEO_COORDINATES,
+        ACCESS,PRIORITY,
+        QUAL1,QUAL2,QUAL3,QUAL4
+ INTO   v_REGION,v_GEO_LOCATION,v_GEO_AREA,v_GEO_COORDINATES,
+        v_ACCESS, v_PRIORITY, 
+        v_BUSINESS_QUALIFIER1, v_BUSINESS_QUALIFIER2, v_BUSINESS_QUALIFIER3, v_BUSINESS_QUALIFIER4
+ FROM l1_s1 WHERE L3 = v_L3 and L1 in 
+ (SELECT MIN(L1) FROM l1_s1 WHERE L3 = v_L3);
+ ELSE
+ IF (v_cnts2l1 > 0) THEN
+ SELECT REGION,GEO_LOCATION,GEO_AREA,GEO_COORDINATES,
+        ACCESS,PRIORITY,
+        QUAL1,QUAL2,QUAL3,QUAL4
+ INTO   v_REGION,v_GEO_LOCATION,v_GEO_AREA,v_GEO_COORDINATES,
+        v_ACCESS, v_PRIORITY, 
+        v_BUSINESS_QUALIFIER1, v_BUSINESS_QUALIFIER2, v_BUSINESS_QUALIFIER3, v_BUSINESS_QUALIFIER4
+ FROM l1_s2 WHERE L3 = v_L3 and L1 in 
+ (SELECT MIN(L1) FROM l1_s2 WHERE L3 = v_L3);
+ ELSE
+ IF (v_cnts3l1 > 0) THEN
+ SELECT REGION,GEO_LOCATION,GEO_AREA,GEO_COORDINATES,
+        ACCESS,PRIORITY,
+        QUAL1,QUAL2,QUAL3,QUAL4
+ INTO   v_REGION,v_GEO_LOCATION,v_GEO_AREA,v_GEO_COORDINATES,
+        v_ACCESS, v_PRIORITY, 
+        v_BUSINESS_QUALIFIER1, v_BUSINESS_QUALIFIER2, v_BUSINESS_QUALIFIER3, v_BUSINESS_QUALIFIER4
+ FROM l1_s3 WHERE L3 = v_L3 and L1 in 
+ (SELECT MIN(L1) FROM l1_s3 WHERE L3 = v_L3);
+ END IF;
+ END IF;
+ END IF;
+ 
+ delete from L3_INFO where   l3 = v_l3 ; /* Clear any existing rows */
+
+ insert into L3_INFO  (
+ L3 , 
+ L3TYPE , 
+ REGION , 
+ L4 , 
+ OPSTATE_S1 , 
+ OPSTATE_S2 , 
+ OPSTATE_S3 , 
+ GEO_LOCATION , 
+ GEO_AREA , 
+ GEO_COORDINATES , 
+ ACCESS ,
+ PRIORITY ,
+ BUSINESS_QUALIFIER1 ,
+ BUSINESS_QUALIFIER2 ,
+ BUSINESS_QUALIFIER3 ,
+ BUSINESS_QUALIFIER4 
+ ) 
+ values (
+ v_L3 , 
+ v_L3TYPE , 
+ v_REGION , 
+ v_L4 , 
+ v_OPSTATE_S1 , 
+ v_OPSTATE_S2 , 
+ v_OPSTATE_S3 , 
+ v_GEO_LOCATION , 
+ v_GEO_AREA , 
+ v_GEO_COORDINATES , 
+ v_ACCESS ,
+ v_PRIORITY ,
+ v_BUSINESS_QUALIFIER1 ,
+ v_BUSINESS_QUALIFIER2 ,
+ v_BUSINESS_QUALIFIER3 ,
+ v_BUSINESS_QUALIFIER4 
+ ); 
+
+set v_count = v_count + 1;
+ set v_commitcount = v_commitcount + 1;
+ IF (v_commitcount = 100) THEN
+ commit work;
+ set v_commitcount = 0;
+ END IF;
+END WHILE;
+CLOSE C1; 
+
+ call DBMS_OUTPUT.PUT_LINE('Count = ' || v_count);
+END @
+
+
