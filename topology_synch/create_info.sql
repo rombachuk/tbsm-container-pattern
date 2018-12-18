@@ -46,15 +46,17 @@ DECLARE v_cnts3l1 INTEGER ;
 DECLARE v_count,v_numl3,v_commitcount INTEGER DEFAULT 0;
 
 DECLARE c1 CURSOR WITH HOLD FOR 
-  SELECT  l3 from  l1_s2 group by l3
-  UNION SELECT  l3 from  l1_s3 group by l3
-  UNION SELECT  l3 from  l1_s1 group by l3;
+  SELECT l3 from 
+  (SELECT  l3 from  l1_s2 group by l3
+   UNION SELECT  l3 from  l1_s3 group by l3
+   UNION SELECT  l3 from  l1_s1 group by l3); 
 
 
 SELECT COUNT(*) INTO v_numl3 from  
+  (SELECT l3 from 
   (SELECT  l3 from  l1_s2 group by l3
    UNION SELECT  l3 from  l1_s3 group by l3
-   UNION SELECT  l3 from  l1_s1 group by l3);
+   UNION SELECT  l3 from  l1_s1 group by l3)) ;
 
 
  call DBMS_OUTPUT.PUT_LINE('Num L3 = ' || v_numl3);
@@ -84,9 +86,9 @@ DO
 
  FETCH c1 INTO v_L3;
 
- SELECT COUNT(*) INTO v_cnts1l1 FROM l1_s1 WHERE l3 = v_l3 ; 
- SELECT COUNT(*) INTO v_cnts2l1 FROM l1_s2 WHERE l3 = v_l3 ; 
- SELECT COUNT(*) INTO v_cnts3l1 FROM l1_s3 WHERE l3 = v_l3 ; 
+ SELECT COUNT(*) INTO v_cnts1l1 FROM (select l1 from l1_s1 WHERE l3 = v_l3 group by l1); 
+ SELECT COUNT(*) INTO v_cnts2l1 FROM (select l1 from l1_s2 WHERE l3 = v_l3 group by l1); 
+ SELECT COUNT(*) INTO v_cnts3l1 FROM (select l1 from l1_s3 WHERE l3 = v_l3 group by l1); 
 
  IF ((v_cnts1l1 > 0) and (v_cnts2l1 > 0) and (v_cnts3l1 > 0)) THEN SET v_l3type = 'S1S2S3'; END IF;
  IF ((v_cnts1l1 > 0) and (v_cnts2l1 > 0) and (v_cnts3l1 = 0)) THEN SET v_l3type = 'S1S2'; END IF;
@@ -99,22 +101,22 @@ DO
  IF (v_cnts1l1 > 0) THEN
  SELECT OPSTATUS
  INTO   v_OPSTATE_S1 
- FROM l1_s1 WHERE L3 = v_L3 and  L1 in 
- (SELECT MIN(l1) FROM l1_s1 WHERE L3 = v_l3);
+ FROM l1_s1 WHERE L3 = v_L3 
+ FETCH FIRST 1 ROWS ONLY;
  END IF;
 
  IF (v_cnts2l1 > 0) THEN
  SELECT OPSTATUS
  INTO   v_OPSTATE_S2 
- FROM l1_s2 WHERE L3 = v_L3 and  L1 in 
- (SELECT MIN(l1) FROM l1_s2 WHERE L3 = v_l3);
+ FROM l1_s2 WHERE L3 = v_L3 
+ FETCH FIRST 1 ROWS ONLY;
  END IF;
 
  IF (v_cnts3l1 > 0) THEN
  SELECT OPSTATUS
  INTO   v_OPSTATE_S3 
- FROM l1_s3 WHERE L3 = v_L3 and  L1 in 
- (SELECT MIN(l3) FROM l1_s3 WHERE L3 = v_l3);
+ FROM l1_s3 WHERE L3 = v_L3 
+ FETCH FIRST 1 ROWS ONLY;
  END IF;
 
 
@@ -125,30 +127,26 @@ DO
  INTO   v_REGION,v_GEO_LOCATION,v_GEO_AREA,v_GEO_COORDINATES,
         v_ACCESS, v_PRIORITY, 
         v_BUSINESS_QUALIFIER1, v_BUSINESS_QUALIFIER2, v_BUSINESS_QUALIFIER3, v_BUSINESS_QUALIFIER4
- FROM l1_s1 WHERE L3 = v_L3 and L1 in 
- (SELECT MIN(L1) FROM l1_s1 WHERE L3 = v_L3);
- ELSE
- IF (v_cnts2l1 > 0) THEN
+ FROM l1_s1 WHERE L3 = v_L3 
+ FETCH FIRST 1 ROWS ONLY;
+ ELSEIF (v_cnts2l1 > 0) THEN
  SELECT REGION,GEO_LOCATION,GEO_AREA,GEO_COORDINATES,
         ACCESS,PRIORITY,
         QUAL1,QUAL2,QUAL3,QUAL4
  INTO   v_REGION,v_GEO_LOCATION,v_GEO_AREA,v_GEO_COORDINATES,
         v_ACCESS, v_PRIORITY, 
         v_BUSINESS_QUALIFIER1, v_BUSINESS_QUALIFIER2, v_BUSINESS_QUALIFIER3, v_BUSINESS_QUALIFIER4
- FROM l1_s2 WHERE L3 = v_L3 and L1 in 
- (SELECT MIN(L1) FROM l1_s2 WHERE L3 = v_L3);
- ELSE
- IF (v_cnts3l1 > 0) THEN
+ FROM l1_s2 WHERE L3 = v_L3 
+ FETCH FIRST 1 ROWS ONLY;
+ ELSEIF (v_cnts3l1 > 0) THEN
  SELECT REGION,GEO_LOCATION,GEO_AREA,GEO_COORDINATES,
         ACCESS,PRIORITY,
         QUAL1,QUAL2,QUAL3,QUAL4
  INTO   v_REGION,v_GEO_LOCATION,v_GEO_AREA,v_GEO_COORDINATES,
         v_ACCESS, v_PRIORITY, 
         v_BUSINESS_QUALIFIER1, v_BUSINESS_QUALIFIER2, v_BUSINESS_QUALIFIER3, v_BUSINESS_QUALIFIER4
- FROM l1_s3 WHERE L3 = v_L3 and L1 in 
- (SELECT MIN(L1) FROM l1_s3 WHERE L3 = v_L3);
- END IF;
- END IF;
+ FROM l1_s3 WHERE L3 = v_L3 
+ FETCH FIRST 1 ROWS ONLY;
  END IF;
  
  delete from L3_INFO where   l3 = v_l3 ; /* Clear any existing rows */

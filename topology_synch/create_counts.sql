@@ -30,18 +30,20 @@ DECLARE v_cntl1,v_commitcount,v_count,v_numl3 INT DEFAULT 0;
 
 
 DECLARE c1 CURSOR WITH HOLD FOR 
-  SELECT l3 FROM
-  (SELECT  l3 from  l1_s1 group by l3
-  UNION SELECT  l3 from  l1_s2 group by l3
-  UNION SELECT  l3 from  l1_s3 group by l3) FOR FETCH ONLY;
-
-
-SELECT COUNT(*) INTO v_numl3 from  
+  SELECT l3 from  
   (SELECT  l3 from  l1_s2 group by l3
    UNION SELECT  l3 from  l1_s3 group by l3
-   UNION SELECT  l3 from  l1_s1 group by l3);
+   UNION SELECT  l3 from  l1_s1 group by l3) ;
 
- call DBMS_OUTPUT.PUT_LINE('Num l3 = ' || v_l3);
+
+SELECT COUNT(*) INTO v_numl3 from 
+  (SELECT l3 from  
+  (SELECT  l3 from  l1_s2 group by l3
+   UNION SELECT  l3 from  l1_s3 group by l3
+   UNION SELECT  l3 from  l1_s1 group by l3)
+   );
+ 
+call DBMS_OUTPUT.PUT_LINE('Num l3 = ' || v_l3);
 OPEN c1;
 WHILE v_count < v_numl3
 DO
@@ -52,11 +54,15 @@ DO
  SET v_ACTIVEFLAG = 0; 
  FETCH c1 INTO v_L3;
 
- SELECT COUNT(*) INTO v_cnts1l1 FROM l1_s1 WHERE l3 = v_L3 ; 
- SELECT COUNT(*) INTO v_cnts2l1 FROM l1_s2 WHERE l3 = v_L3 ; 
- SELECT COUNT(*) INTO v_cnts3l1 FROM l1_s3 WHERE l3 = v_L3 ; 
+ SELECT COUNT(*) INTO v_cnts1l1 FROM (select l1 from l1_s1 WHERE l3 = v_L3 group by l1); 
+ SELECT COUNT(*) INTO v_cnts2l1 FROM (select l1 from l1_s2 WHERE l3 = v_L3 group by l1); 
+ SELECT COUNT(*) INTO v_cnts3l1 FROM (select l1 from l1_s3 WHERE l3 = v_L3 group by l1); 
+ SELECT COUNT(*) INTO v_cntl1 from
+  (SELECT l1 from  
+  (SELECT  l1 from  l1_s1 where l3 = v_L3  group by l1
+   UNION SELECT  l1 from  l1_s2 where l3 = v_L3  group by l1
+   UNION SELECT  l1 from  l1_s3 where l3 = v_L3  group by l1) );
 
- SET v_cntl1 = v_cnts1l1 + v_cnts2l1 + v_cnts3l1;
  
  SELECT coalesce(max(ACTIVEEVENTSFLAG),0) into v_ACTIVEFLAG from L3_COUNTS where  l3 = v_L3 ; /* Get current events flag */
 
