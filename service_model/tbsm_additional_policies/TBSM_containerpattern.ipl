@@ -1,0 +1,289 @@
+function get_family_tree(ServiceInstance,children) {
+i = 0;
+children = {};
+while(i<ServiceInstance.NumChildren) {
+child = newObject();
+child.id = ServiceInstance.ChildInstanceBeans[i].ServiceInstanceName;
+child.status = ServiceInstance.ChildInstanceBeans[i].StateModelNode.OverallAttribute.Value;
+child.template = ServiceInstance.ChildInstanceBeans[i].PrimaryTagName;
+child.numchildren = ServiceInstance.ChildInstanceBeans[i].numchildren;
+child.children = {};
+j = 0;
+ while(j<child.numchildren){
+ grandchild = newObject();
+ grandchild.id = ServiceInstance.ChildInstanceBeans[i].ChildInstanceBeans[j].ServiceInstanceName;
+ grandchild.status = ServiceInstance.ChildInstanceBeans[i].ChildInstanceBeans[j].StateModelNode.OverallAttribute.Value;
+ grandchild.template = ServiceInstance.ChildInstanceBeans[i].ChildInstanceBeans[j].PrimaryTagName;
+ grandchild.numchildren = ServiceInstance.ChildInstanceBeans[i].ChildInstanceBeans[j].numchildren;
+ grandchild.children = {};
+ k = 0;
+  while(k<grandchild.numchildren){
+  greatgrandchild = newObject();
+  greatgrandchild.id = ServiceInstance.ChildInstanceBeans[i].ChildInstanceBeans[j].ChildInstanceBeans[k].ServiceInstanceName;
+  greatgrandchild.status = ServiceInstance.ChildInstanceBeans[i].ChildInstanceBeans[j].ChildInstanceBeans[k].StateModelNode.OverallAttribute.Value;
+  greatgrandchild.template = ServiceInstance.ChildInstanceBeans[i].ChildInstanceBeans[j].ChildInstanceBeans[k].PrimaryTagName;
+  grandchild.children = grandchild.children + greatgrandchild;
+  k = k+1;
+  }
+ child.children = child.children + grandchild;
+ j = j+1;
+ }
+children = children + child;
+i = i+1;
+}
+}
+
+function flatten_family_tree(children,dependents) {
+dependents={};
+i = 0;
+while (i<length(children)) {
+ j=0;
+  while (j<children[i].numchildren) {
+    k=0;
+    while (k<children[i].children[j].numchildren) {
+     kdependent = newObject();
+     kdependent.id =children[i].children[j].children[k].id;
+     kdependent.status =children[i].children[j].children[k].status;
+     kdependent.template =children[i].children[j].children[k].template;
+     dependents = dependents + kdependent;
+     k=k+1;
+    }
+    jdependent = newObject();
+    jdependent.id =children[i].children[j].id;
+    jdependent.status =children[i].children[j].status;
+    jdependent.template =children[i].children[j].template;
+    dependents = dependents + jdependent;
+    j=j+1;
+  }
+  idependent = newObject();
+  idependent.id =children[i].id;
+  idependent.status =children[i].status;
+  idependent.template =children[i].template;
+  dependents = dependents + idependent;
+  i=i+1;
+ }
+}
+
+function object_to_string(iobjects,ostring) {
+i = 0;
+ostring = '';
+while (i < length(iobjects)) {
+ astring = ''+ iobjects[i].ID + '|' +iobjects[i].CELL+'';
+i=i+1;
+if (i < length(iobjects)) {
+ ostring = ostring + astring + ',';
+ } else {
+ ostring = ostring + astring ;
+ }
+ }
+ostring = ostring + '';
+}
+
+function string_to_object(istring,objects) {
+i = 0;
+objects = {};
+elements = Split(istring,",");
+while (i < length(elements)) {
+parts = Split(elements[i],"|");
+thisobj = newObject();
+thisobj.id = parts[0];
+thisobj.level1 = parts[1];
+objects = objects + thisobj;
+i=i+1;
+}
+
+}
+
+function fetch_child_data(ServiceInstance,svr_data,esx_data,net_data) {
+Now = getdate(); // Now is held in Unix seconds since 1-jan-1970
+if (Now >= ServiceInstance.ServiceCountsExpiry) {
+ServiceSource = "TBSMDatabase"; 
+CountOnly = false;
+Query = "SELECT l2 as id,l1 FROM l1_s1  WHERE l3 = '" + Rextract(ServiceInstance.ServiceInstanceName,'(\w+)_L3O') + "'";
+result = DirectSQL(ServiceSource,Query,CountOnly); 
+object_to_string(result,ServiceInstance.svr_data);
+Query = "SELECT l2 as id,l1 FROM l1_s2  WHERE l3 = '" + Rextract(ServiceInstance.ServiceInstanceName,'(\w+)_L3O') + "'";
+result = DirectSQL(ServiceSource,Query,CountOnly); 
+object_to_string(result,ServiceInstance.esx_data);
+Query = "SELECT l2 as id,l1 FROM l1_s3  WHERE l3 = '" + Rextract(ServiceInstance.ServiceInstanceName,'(\w+)_L3O') + "'";
+result = DirectSQL(ServiceSource,Query,CountOnly); 
+object_to_string(result,ServiceInstance.net_data);
+}
+string_to_object(ServiceInstance.svr_data,svr_data);
+string_to_object(ServiceInstance.esx_data,esx_data);
+string_to_object(ServiceInstance.net_data,net_data);
+} 
+
+ 
+function find_dependents_fortemplate(dependents,template,bad_dependents,degr_dependents,good_dependents) {
+i=0;
+bad_dependents = {};
+degr_dependents = {};
+good_dependents = {};
+ while (i < length(dependents)) {
+  if ((dependents[i].template = template) && (dependents[i].status = 5)) {
+    bad_dependents = bad_dependents + dependents[i];
+   }
+  if ((dependents[i].template = template) && (dependents[i].status = 3)) {
+    degr_dependents = degr_dependents + dependents[i];
+  }
+  if ((dependents[i].template = template) && (dependents[i].status = 0)) {
+    good_dependents = good_dependents + dependents[i];
+  }
+  i = i+1;
+ }
+}
+
+function find_level1_from_level1_events(ilist,extract,olist)  {
+olist={};
+i=0;
+while (i<length(ilist)) {
+ olist = olist + RExtract(ilist[i].id,extract);
+ i = i+1;
+}
+}
+
+function find_level1_from_level3_events(data,level1) {
+ level1 = {};
+   j=0;
+   while (j<length(data)) {
+     level1 = level1 + data[j].level1;
+     j = j+1;
+   }
+}
+
+function find_level1_from_level2(list,data,extract,level1) {
+ level1 = {};
+ i=0;
+ while (i<length(list)) {
+   j=0;
+   while (j<length(data)) {
+     if (data[j].id = RExtract(list[i].id,extract)) {
+          level1 = level1 + data[j].level1;
+     }
+     j = j+1;
+   }
+ i = i+1;
+ }
+}
+
+
+function aorb_lists(lista,listb,listc) {
+listc={};
+i=0;
+ while (i < length(listb)) {
+  listc = listc + listb[i];
+  i=i+1;
+ }
+j=0;
+ while (j< length(lista)) {
+  k=0;
+  match=false;
+  while (k < length(listb)) {
+   if (lista[j]=listb[k]) {
+   match=true;
+   } 
+  k=k+1;
+  }   
+ if (match=false) {
+  listc = listc + lista[j];
+ }
+ j=j+1;
+ }
+}
+
+
+function anotb_lists(lista,listb,listc) {
+listc={};
+j=0;
+ while (j< length(lista)) {
+  k=0;
+  match=false;
+  while (k < length(listb)) {
+   if (lista[j]=listb[k]) {
+   match=true;
+   } 
+  k=k+1;
+  }   
+ if (match=false) {
+  listc = listc + lista[j];
+ }
+ j=j+1;
+ }
+}
+
+
+function find_level1(dependents,data,level3_template,level2_template,level1_template,level3_extract,level2_extract,level1_extract,badlevel1,degrlevel1) {
+  if (level3_template <> '') { 
+  find_dependents_fortemplate(dependents,level3_template,badlevel3,degrlevel3,goodlevel3);  
+  } else {
+  badlevel3 = {}; degrlevel3 = {};
+  }
+  find_dependents_fortemplate(dependents,level2_template,badlevel2,degrlevel2,goodlevel2);  
+  find_dependents_fortemplate(dependents,level1_template,badlevel1,degrlevel1,goodlevel1);  
+  if (length(badlevel3)=1) { find_level1_from_level3_events(data,badlevel1fromlevel3); } else { badlevel1fromlevel3 = {}; }
+  if (length(degrlevel3)=1) { find_level1_from_level3_events(data,degrlevel1fromlevel3); } else { degrlevel1fromlevel3 = {}; }
+  find_level1_from_level2_events(badlevel2,data,level2_extract,badlevel1fromlevel2);
+  find_level1_from_level2_events(degrlevel2,data,level2_extract,degrlevel1fromlevel2);
+  find_level1_from_level1_events(badlevel1,level1_extract,badlevel1fromlevel1); 
+  find_level1_from_level1_events(degrlevel1,level1_extract,degrlevel1fromlevel1); 
+  aorb_lists(badlevel1fromlevel3,badlevel1fromlevel2,badlevel1fromabove);
+  aorb_lists(badlevel1fromabove,badlevel1fromlevel1,badlevel1);
+  aorb_lists(degrlevel1fromlevel3,degrlevel1fromlevel2,degrlevel1fromabove);
+  aorb_lists(degrlevel1fromabove,degrlevel1fromlevel1,degrlevel1all);
+  anotb_lists(degrlevel1all,badlevel1,degrlevel1);
+}
+
+function update_additional_attributes(ServiceInstance) {
+ 
+Now = getdate(); // Now is held in Unix seconds since 1-jan-1970
+if (Now >= ServiceInstance.ServiceCountsExpiry) {
+
+ServiceSource = "cmdb"; 
+Query = "SELECT * FROM RAN_SITE_COUNTS WHERE LOCATION = '" + Rextract(ServiceInstance.ServiceInstanceName,'(\w+)_SITA') + "'";
+ CountOnly = false; MyServices = DirectSQL(ServiceSource,Query,CountOnly); 
+ServiceCount = Num;
+if (ServiceCount != 1) {
+log("SiteAllServices_OverallStatus DB Error : ServiceSiteCounts Update Find Service Info for " + ServiceInstance.DisplayName +
+  " : RowsReturned = " + ServiceCount); 
+ ServiceInstance.ServiceClassifier = 'Unknown';
+}
+else {
+ ServiceRow = MyServices[0];
+ ServiceInstance.ServiceClassifier = ServiceRow.SiteType;
+ ServiceInstance.Num2GCells  = ServiceRow.Count2GCells; 
+ ServiceInstance.Num3GCells  = ServiceRow.Count3GCells;
+ ServiceInstance.Num4GCells  = ServiceRow.Count4GCells;
+ ServiceInstance.NumAllCells = ServiceRow.CountCells;
+ ServiceInstance.NumBTS      = ServiceRow.CountBTS;
+ ServiceInstance.NumNodeB    = ServiceRow.CountNodeB;
+ ServiceInstance.NumENodeB   = ServiceRow.CountENodeB; 
+}
+
+Query2 = "SELECT siteaccess,geo_location,geo_area,siteregion," +
+         "CASE WHEN length(vendor_2g)=0 or vendor_2g is null then 'No2G' else trim(vendor_2g) end||'/'||CASE WHEN length(vendor_3g)=0 or vendor_3g is null then 'No3G' else trim(vendor_3g) end||'/'||CASE WHEN length(vendor_4g)=0 or vendor_4g is null then 'No4G' else trim(vendor_4g) end as vendor," +
+         "CASE WHEN length(pool_2g)=0 or pool_2g is null then 'No2G' else trim(pool_2g) end||'/'||CASE WHEN length(pool_3g)=0 or pool_3g is null then 'No3G' else trim(pool_3g) end||'/'||CASE WHEN length(pool_4g)=0 or pool_4g is null then 'No4G' else trim(pool_4g) end as pool," +
+         "CASE WHEN length(controller_2g)=0 or controller_2g is null then 'No2G' else trim(controller_2g) end||'/'||CASE WHEN length(controller_3g)=0  or controller_3g is null then 'No3G' else trim(controller_3g) end||'/'||CASE WHEN length(controller_4g)=0 or controller_4g is null then 'No4G' else trim(controller_4g) end as controller" +
+         " FROM RAN_SITE_INFO WHERE LOCATION = '" + Rextract(ServiceInstance.ServiceInstanceName,'(\w+)_SITA') + "'";
+ CountOnly = false; MyServices2 = DirectSQL(ServiceSource,Query2,CountOnly); 
+ServiceCount2 = Num;
+if (ServiceCount2 != 1) {
+log("Site_OverallStatus DB Error : ServiceSiteInfo Update Find Service Info for " + ServiceInstance.DisplayName +
+  " : RowsReturned = " + ServiceCount2); 
+}
+else {
+ ServiceRow = MyServices2[0];
+ ServiceInstance.Access =  ServiceRow.SiteAccess;
+ ServiceInstance.GeoLocation = ServiceRow.Geo_Location;
+ ServiceInstance.GeoArea = ServiceRow.Geo_Area;
+ ServiceInstance.Region = ServiceRow.SiteRegion;
+ ServiceInstance.Vendor = ServiceRow.Vendor;
+ ServiceInstance.Pool = ServiceRow.Pool;
+ ServiceInstance.Controller = ServiceRow.Controller;
+}
+
+ ServiceInstance.ServiceCountsExpiry = Now + 86400; // Now = 1 day
+}
+}
+ 
+

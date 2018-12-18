@@ -1,0 +1,143 @@
+
+thisInstance = newObject();
+startmilli = JavaCall("java.lang.System",null,"currentTimeMillis",null);  
+LogFlag = false;
+  children = {}; dependents = {}; bts_data={}; nodeb_data={}; enodeb_data={}; s0_data={}; s1_data={}; s2_data={}; s3_data={};
+  TBSM_containerpattern.get_family_tree(ServiceInstance,children);
+  TBSM_containerpattern.flatten_family_tree(children,dependents);
+
+  TBSM_containerpattern.fetch_child_data(ServiceInstance,svr_data,esx_data,net_data);
+  TBSM_containerpattern.find_cells(dependents,svr_data,'level3service1','level2service1','level1service1','(\w+)_L3S1','(\w+)_L2S1','(\w+)_L1S1',thisInstance.bads1,thisInstance.degrs1);
+  TBSM_containerpattern.find_cells(dependents,svr_data,'level3service2','level2service2','level1service2','(\w+)_L3S2','(\w+)_L2S2','(\w+)_L1S2',thisInstance.bads2,thisInstance.degrs2);
+  TBSM_containerpattern.find_cells(dependents,svr_data,'level3service3','level2service3','level1service3','(\w+)_L3S3','(\w+)_L2S3','(\w+)_L1S3',thisInstance.bads3,thisInstance.degrs3);
+  TBSM_containerpattern.update_additional_attributes(ServiceInstance);
+// create dependency of this policy on the key counts rules. Must appear here, as well as in StatusText library
+// The following statement ensures any change of these driving rules, trigger this policy, and allowing update of db
+//
+NumAff2GL1 = InstanceNode.NumBad2GL1.Value+InstanceNode.NumBad2GVL1.Value + InstanceNode.NumBad2GML1.Value + InstanceNode.NumBad2GDL1.Value +
+                InstanceNode.NumDegr2GL1.Value+InstanceNode.NumDegr2GVL1.Value + InstanceNode.NumDegr2GML1.Value + InstanceNode.NumDegr2GDL1.Value; 
+NumAff3GL1 = InstanceNode.NumBad3GL1.Value + InstanceNode.NumBad3GVL1.Value + InstanceNode.NumBad3GML1.Value + InstanceNode.NumBad3GDL1.Value +
+                InstanceNode.NumDegr3GL1.Value + InstanceNode.NumDegr3GVL1.Value + InstanceNode.NumDegr3GML1.Value + InstanceNode.NumDegr3GDL1.Value; 
+NumAff4GL1 = InstanceNode.NumBad4GL1.Value+InstanceNode.NumBad4GVL1.Value + InstanceNode.NumBad4GML1.Value + InstanceNode.NumBad4GDL1.Value +
+                InstanceNode.NumDegr4GL1.Value+InstanceNode.NumDegr4GVL1.Value + InstanceNode.NumDegr4GML1.Value + InstanceNode.NumDegr4GDL1.Value; 
+NumAff2GBTSs = InstanceNode.NumBadBTSs.Value+InstanceNode.NumBad2GVBTSs.Value + InstanceNode.NumBad2GMBTSs.Value + InstanceNode.NumBad2GDBTSs.Value +
+                InstanceNode.NumDegrBTSs.Value+InstanceNode.NumDegr2GVBTSs.Value + InstanceNode.NumDegr2GMBTSs.Value + InstanceNode.NumDegr2GDBTSs.Value; 
+NumAff3GNodeBs = InstaneNode.NumBadNodeBs.Value+InstanceNode.NumBad3GVNodeBs.Value + InstanceNode.NumBad3GMNodeBs.Value + InstanceNode.NumBad3GDNodeBs.Value +
+                InstanceNode.NumDegNodeBs.Value+InstanceNode.NumDegr3GVNodeBs.Value + InstanceNode.NumDegr3GMNodeBs.Value + InstanceNode.NumDegr3GDNodeBs.Value; 
+NumAff4GENodeBs = InstanceNode.NumBadENodeBs.Value+InstanceNode.NumBad4GVENodeBs.Value + InstanceNode.NumBad4GMENodeBs.Value + InstanceNode.NumBad4GDENodeBs.Value +
+                InstanceNode.NumDegrENodeBs.Value+InstanceNode.NumDegr4GVENodeBs.Value + InstanceNode.NumDegr4GMENodeBs.Value + InstanceNode.NumDegr4GDENodeBs.Value; 
+NumAffSites = InstanceNode.NumBad2GSites.Value + InstanceNode.NumBad3GSites.Value + InstanceNode.NumBad4GSites.Value +
+              InstanceNode.NumDegr2GSites.Value + InstanceNode.NumDegr3GSites.Value + InstanceNode.NumDegr4GSites.Value +
+              InstanceNode.NumBadEnvSites.Value + InstanceNode.NumDegrEnvSites.Value + InstanceNode.Dummy.Value; 
+
+thisInstance.NumL1S1 = length(svr_data);
+thisInstance.NumL1S2 = length(esx_data);
+thisInstance.NumL1S3 = length(net_data);
+thisInstance.NumL1 = thisInstance.Num2GL1 + thisInstance.Num3GL1 + thisInstance.Num4GL1;
+thisInstance.NumBadL1 = length(thisInstance.bad2g)+length(thisInstance.bad3g)+length(thisInstance.bad4g);
+thisInstance.NumDegrL1 = length(thisInstance.degr2g)+length(thisInstance.degr3g)+length(thisInstance.degr4g);
+thisInstance.NumBadL1S3 = length(thisInstance.bad2gd)+length(thisInstance.bad3gd)+length(thisInstance.bad4gd);
+thisInstance.NumDegrL1S3 = length(thisInstance.degr2gd)+length(thisInstance.degr3gd)+length(thisInstance.degr4gd);
+thisInstance.NumBadL1S2 = length(thisInstance.bad2gm)+length(thisInstance.bad3gm)+length(thisInstance.bad4gm);
+thisInstance.NumDegrL1S2 = length(thisInstance.degr2gm)+length(thisInstance.degr3gm)+length(thisInstance.degr4gm);
+thisInstance.NumBadL1S1 = length(thisInstance.bad2gv)+length(thisInstance.bad3gv)+length(thisInstance.bad4gv);
+thisInstance.NumDegrL1S1 = length(thisInstance.degr2gv)+length(thisInstance.degr3gv)+length(thisInstance.degr4gv);
+thisInstance.NumBadEnvSites = InstanceNode.NumBadEnvSites.Value;
+thisInstance.NumDegrEnvSites = InstanceNode.NumDegrEnvSites.Value;
+
+if (thisInstance.NumBadEnvSites > 0) {thisInstance.SiteEnvStatus = 5;}
+else {
+ if (thisInstance.NumDegrEnvSites > 0) {thisInstance.SiteEnvStatus = 3;}
+ else {thisInstance.SiteEnvStatus = 0;}
+}
+
+
+if (thisInstance.Num2GL1 = 0) { thisInstance.Site2GStatus = 0; }
+else {
+ if (length(thisInstance.bad2g) = 0) {
+   if (length(thisInstance.degr2g) > 0) { thisInstance.Site2GStatus = 3; }
+   else { thisInstance.Site2GStatus = 0; }
+ }
+ else {
+   if (length(thisInstance.bad2g) = thisInstance.Num2GL1) { thisInstance.Site2GStatus = 5; }
+   else { thisInstance.Site2GStatus = 3; }
+ }
+}
+
+if (thisInstance.Num3GL1 = 0) { thisInstance.Site3GStatus = 0; }
+else {
+ if (length(thisInstance.bad3g) = 0) {
+   if (length(thisInstance.degr3g) > 0) { thisInstance.Site3GStatus = 3; }
+   else { thisInstance.Site3GStatus = 0; }
+ }
+ else {
+   if (length(thisInstance.bad3g) = thisInstance.Num3GL1) { thisInstance.Site3GStatus = 5; }
+   else { thisInstance.Site3GStatus = 3; }
+ }
+}
+
+
+if (thisInstance.Num4GL1 = 0) { thisInstance.Site4GStatus = 0; }
+else {
+ if (length(thisInstance.bad4g) = 0) {
+   if (length(thisInstance.degr4g) > 0) { thisInstance.Site4GStatus = 3; }
+   else { thisInstance.Site4GStatus = 0; }
+ }
+ else {
+   if (length(thisInstance.bad4g) = thisInstance.Num4GL1) { thisInstance.Site4GStatus = 5; }
+   else { thisInstance.Site4GStatus = 3; }
+ }
+}
+
+ if (thisInstance.NumBadL1S3 = 0) {
+   if (thisInstance.NumDegrL1S3 > 0) { thisInstance.L1S3Status = 3; }
+   else { thisInstance.L1S3Status = 0; }
+ }
+ else {
+   if (thisInstance.NumBadL1S3 = thisInstance.NumL1) { thisInstance.L1S3Status = 5; }
+   else { thisInstance.L1S3Status = 3; }
+ }
+
+ if (thisInstance.NumBadL1S2 = 0) {
+   if (thisInstance.NumDegrL1S2 > 0) { thisInstance.L1S2Status = 3; }
+   else { thisInstance.L1S2Status = 0; }
+ }
+ else {
+   if (thisInstance.NumBadL1S2 = thisInstance.NumL1) { thisInstance.L1S2Status = 5; }
+   else { thisInstance.L1S2Status = 3; }
+ }
+
+ if (thisInstance.NumBadL1S1 = 0) {
+   if (thisInstance.NumDegrL1S1 > 0) { thisInstance.L1S1Status = 3; }
+   else { thisInstance.L1S1Status = 0; }
+ }
+ else {
+   if (thisInstance.NumBadL1S1 = thisInstance.NumL1) { thisInstance.L1S1Status = 5; }
+   else { thisInstance.L1S1Status = 3; }
+ }
+// log("DEPENDENTS:"+dependents);
+// log("INSTANCE:"+thisInstance);
+// log("SERVICES:"+thisInstance.L1S1Status+'/'+thisInstance.L1S2Status+'/'+thisInstance.L1S3Status+'/');
+
+if ((thisInstance.L1S1Status = 5) AND (thisInstance.L1S2Status = 5) AND (thisInstance.L1S3Status = 5) ) 
+{NewStatus = 5; }
+else {
+   if ((thisInstance.L1S1Status >= 3) OR (thisInstance.L1S2Status >= 3) OR (thisInstance.L1S3Status >= 3) OR (thisInstance.L1S4Status >= 3)) 
+   {NewStatus = 3;}
+   else { NewStatus = 0;  } 
+   }
+ RAN_StatusText_Library.generate_statustext_for_ran_serviceevent (ServiceInstance, thisInstance, SiteStatusText);
+ RAN_StatusText_Library.generate_servicetext_for_ran_serviceevent (thisInstance, SiteServiceText);
+ RAN_StatusText_Library.generate_allattributestext_for_site_serviceevent (ServiceInstance, thisInstance, SiteStatusText, SiteServiceText, 
+             NewStatus, StatusAttributesText, EnrichmentAttributesText); 
+
+
+  RAN_StatusText_Library.file_status_for_site_serviceevent (ServiceInstance, SiteStatusText, SiteServiceText, 
+                NewStatus, StatusAttributesText,EnrichmentAttributesText); 
+
+
+Status = NewStatus;
+
+endmilli = JavaCall("java.lang.System",null,"currentTimeMillis",null); 
+durmilli = endmilli - startmilli;  
+     log("Processing SiteAgg policy took [" + durmilli + "ms] for " + ServiceInstance.DisplayName);  
