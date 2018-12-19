@@ -1,0 +1,97 @@
+
+thisInstance = newObject();
+startmilli = JavaCall("java.lang.System",null,"currentTimeMillis",null);  
+LogFlag = false;
+  children = {}; dependents = {}; bts_data={}; nodeb_data={}; enodeb_data={}; s0_data={}; s1_data={}; s2_data={}; s3_data={};
+  cp_utils.get_family_tree(ServiceInstance,children);
+  cp_utils.flatten_family_tree(children,dependents);
+
+  cp_utils.fetch_child_data(ServiceInstance,svr_data,esx_data,net_data);
+  cp_utils.find_level1(dependents,svr_data,'level3service1','level2service1','level1service1','(\w+)_L3S1','(\w+)_L2S1','(\w+)_L1S1',thisInstance.badl1s1,thisInstance.degrl1s1);
+  cp_utils.find_level1(dependents,svr_data,'level3service2','level2service2','level1service2','(\w+)_L3S2','(\w+)_L2S2','(\w+)_L1S2',thisInstance.badl1s2,thisInstance.degrl1s2);
+  cp_utils.find_level1(dependents,svr_data,'level3service3','level2service3','level1service3','(\w+)_L3S3','(\w+)_L2S3','(\w+)_L1S3',thisInstance.badl1s3,thisInstance.degrl1s3);
+  cp_utils.update_additional_attributes(ServiceInstance);
+// create dependency of this policy on the key counts rules. Must appear here, as well as in StatusText library
+// The following statement ensures any change of these driving rules, trigger this policy, and allowing update of db
+//
+NumAffL1 = InstanceNode.NumBadL1S1.Value+InstanceNode.NumBadL1S2.Value + InstanceNode.NumBadL1S3.Value + InstanceNode.NumBadL1.Value +
+                InstanceNode.NumDegrL1S1.Value+InstanceNode.NumDegrL1S2.Value + InstanceNode.NumDegrL1S3.Value + InstanceNode.NumDegrL1.Value; 
+NumAffL2 = InstanceNode.NumBadL2S1.Value + InstanceNode.NumBadL2S2.Value + InstanceNode.NumBadL2S3.Value + InstanceNode.NumBadL2.Value +
+                InstanceNode.NumDegrL2S1.Value+InstanceNode.NumDegrL2S2.Value + InstanceNode.NumDegrL2S3.Value + InstanceNode.NumDegrL2.Value; 
+NumAffL3 = InstanceNode.NumBadL3S4.Value + InstanceNode.NumDegrL3S4.Value + InstanceNode.Dummy.Value; 
+
+thisInstance.NumL1S1 = length(svr_data);
+thisInstance.NumL1S2 = length(esx_data);
+thisInstance.NumL1S3 = length(net_data);
+thisInstance.badl3s4 = InstanceNode.NumBadL3S4.Value;
+thisInstance.degrl3s4 = InstanceNode.NumDegrL3S4.Value;
+
+if (thisInstance.badl3s4 > 0) {thisInstance.L3S4Status = 5;}
+else {
+ if (thisInstance.degrl3s4 > 0) {thisInstance.L3S4Status = 3;}
+ else {thisInstance.L3S4Status = 0;}
+}
+
+
+if (thisInstance.NumL1S1 = 0) { thisInstance.L3S1Status = 0; }
+else {
+ if (length(thisInstance.badl1ls1) = 0) {
+   if (length(thisInstance.degrl1s1) > 0) { thisInstance.L3S1Status = 3; }
+   else { thisInstance.L3S1Status = 0; }
+ }
+ else {
+   if (length(thisInstance.badl1s1) = thisInstance.NumL1S1) { thisInstance.L3S1Status = 5; }
+   else { thisInstance.L3S1Status = 3; }
+ }
+}
+
+if (thisInstance.NumL1S2 = 0) { thisInstance.L3S2Status = 0; }
+else {
+ if (length(thisInstance.badl1ls2) = 0) {
+   if (length(thisInstance.degrl1s2) > 0) { thisInstance.L3S2Status = 3; }
+   else { thisInstance.L3S2Status = 0; }
+ }
+ else {
+   if (length(thisInstance.badl1s2) = thisInstance.NumL1S2) { thisInstance.L3S2Status = 5; }
+   else { thisInstance.L3S2Status = 3; }
+ }
+}
+
+if (thisInstance.NumL1S3 = 0) { thisInstance.L3S3Status = 0; }
+else {
+ if (length(thisInstance.badl1ls3) = 0) {
+   if (length(thisInstance.degrl1s3) > 0) { thisInstance.L3S3Status = 3; }
+   else { thisInstance.L3S3Status = 0; }
+ }
+ else {
+   if (length(thisInstance.badl1s3) = thisInstance.NumL1S3) { thisInstance.L3S3Status = 5; }
+   else { thisInstance.L3S3Status = 3; }
+ }
+}
+
+// log("DEPENDENTS:"+dependents);
+// log("INSTANCE:"+thisInstance);
+// log("SERVICES:"+thisInstance.L1S1Status+'/'+thisInstance.L1S2Status+'/'+thisInstance.L1S3Status+'/');
+
+if ((thisInstance.L1S1Status = 5) AND (thisInstance.L1S2Status = 5) AND (thisInstance.L1S3Status = 5) ) 
+{NewStatus = 5; }
+else {
+   if ((thisInstance.L1S1Status >= 3) OR (thisInstance.L1S2Status >= 3) OR (thisInstance.L1S3Status >= 3) OR (thisInstance.L1S4Status >= 3)) 
+   {NewStatus = 3;}
+   else { NewStatus = 0;  } 
+   }
+ cp_statustext.generate_statustext_for_l3_serviceevent (ServiceInstance, thisInstance, SiteStatusText);
+ cp_statustext.generate_servicetext_for_l3_serviceevent (thisInstance, SiteServiceText);
+ cp_statustext.generate_allattributestext_for_l3_serviceevent (ServiceInstance, thisInstance, SiteStatusText, SiteServiceText, 
+             NewStatus, StatusAttributesText, EnrichmentAttributesText); 
+
+
+  cp_statustext.file_status_for_l3_serviceevent (ServiceInstance, SiteStatusText, SiteServiceText, 
+                NewStatus, StatusAttributesText,EnrichmentAttributesText); 
+
+
+Status = NewStatus;
+
+endmilli = JavaCall("java.lang.System",null,"currentTimeMillis",null); 
+durmilli = endmilli - startmilli;  
+     log("Processing SiteAgg policy took [" + durmilli + "ms] for " + ServiceInstance.DisplayName);  

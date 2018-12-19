@@ -1,0 +1,57 @@
+startmilli = JavaCall("java.lang.System",null,"currentTimeMillis",null);  
+
+AggDestination = 'AGG'; 
+AggDataType = "AGG_ALERTS";
+ThisElement = EventContainer.Location;
+KeyColumn = 'Location'; 
+
+ExistQuery = "select Serial from alerts.status where Class=12000 and "
+             + KeyColumn + " = '" + ThisElement + "'";
+DestEvent = DirectSQL(AggDestination,ExistQuery,'false');
+if (Length(DestEvent) = 1 ) { NewEventRequired = 0; }
+else { NewEventRequired = 1; }
+
+if (NewEventRequired != 1) { //this is an update
+ if (ResynchStatus = 1) { // we are requested to update during a resynch
+                          // we hold off any updates, since events are being reprocessed and it can take many 
+                          // minutes for final result to be reached, and transitional results will confuse users
+ } 
+ else { // no longer in resynch, so update the existing event
+log("Processing Publishing Policy for " + ThisElement + " Existing Event Found in " + AggDestination);
+  EventRow = DestEvent[0];
+  EventRow.Summary = EventContainer.Summary;
+  EventRow.Service = EventContainer.Service;
+  EventRow.LastOccurrence  = EventContainer.LastOccurrence;
+  EventRow.FirstOccurrence = EventContainer.FirstOccurrence;
+  EventRow.ExtendedAttr = EventContainer.ExtendedAttr; 
+  EventRow.Severity = EventContainer.Severity;  
+ }
+} 
+else {
+ // this is a new event and we insert even during a resynch
+EventFields = Keys(EventContainer);
+NumFields = Length(EventFields);
+FieldCount = 0;
+MyCopy = NewObject();
+While(FieldCount < NumFields)
+{
+CurrField = EventFields[FieldCount];
+MyCopy[CurrField] = EventContainer[CurrField];
+FieldCount = FieldCount + 1; 
+}
+
+// Change any field values that you want to be different in the new event.
+// eg 
+// MyCopy.Class = 12020;
+ 
+if (FieldCount > 1) { AddDataItem(AggDataType,MyCopy); } // Blank EventContainer has 1 field by default
+
+}
+   EventContainer.RAD_SeenByImpact = 2; // 0 on state change, 1 after enrichment, 2 after published 
+   ReturnEvent(EventContainer);
+
+endmilli = JavaCall("java.lang.System",null,"currentTimeMillis",null); 
+durmilli = endmilli - startmilli;  
+    log("Processing Publishing policy took [" + durmilli + "ms] for " + EventContainer.VFElementName);  
+
+

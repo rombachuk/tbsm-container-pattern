@@ -1,0 +1,29 @@
+
+  OS_Source = "ObjectServer_DS"; 
+ MySAEList = ''; sae_index=0; EarliestFirstOccurrence=0; LatestLastOccurrence=0;
+ SAEQuery = "select ServerSerial,LastOccurrence,FirstOccurrence from alerts.status where " +
+            "Class <> 12000 and RAD_ServiceName <> '' and Location='"+ EventContainer.Location + "'"; 
+ MySAE = DirectSQL(OS_Source,SAEQuery,'false');
+ SAERowCount = Num;
+  while (sae_index < SAERowCount) {
+    if (sae_index = 0) { 
+      MySAEList =  MySAE[0].ServerSerial; 
+      LatestLastOccurrence    = MySAE[sae_index].LastOccurrence;
+      EarliestFirstOccurrence = MySAE[sae_index].FirstOccurrence;
+    }
+    else {
+    MySAEList = MySAEList + "," + MySAE[sae_index].ServerSerial; 
+    if (MySAE[sae_index].LastOccurrence > LatestLastOccurrence) 
+          {LatestLastOccurrence=MySAE[sae_index].LastOccurrence;}
+    if (MySAE[sae_index].FirstOccurrence < EarliestFirstOccurrence) 
+          {EarliestFirstOccurrence = MySAE[sae_index].FirstOccurrence;}
+    }
+   sae_index = sae_index + 1; 
+  } 
+ EventContainer.ExtendedAttr = MySAEList; 
+ EventContainer.LastOccurrence =  LatestLastOccurrence;
+ EventContainer.FirstOccurrence = EarliestFirstOccurrence; 
+ EventContainer.RAD_SeenByImpact = 1;  
+// log(EventContainer);
+
+   ReturnEvent(EventContainer);

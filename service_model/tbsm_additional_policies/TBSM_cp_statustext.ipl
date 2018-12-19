@@ -1,0 +1,262 @@
+
+/*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+function generate_allattributestext_for_l3_serviceevent ( ServiceInstance, Instance, StatusText, ServiceText, NewStatus, StatusAttributesText, EnrichmentAttributesText) {
+   StatusAttributesText = 
+   RExtract(ServiceInstance.ServiceInstanceName,'(\w+)_L3O') + '|' +
+   ServiceInstance.ServiceClassifier + '|' +   
+   length(Instance.badl1s1) + '|' +   
+   length(Instance.badl1s2) + '|' +   
+   length(Instance.badl1s3) + '|' +   
+   length(Instance.degrl1s1) + '|' +   
+   length(Instance.degrl1s2) + '|' +   
+   length(Instance.degrl1s3) + '|' +   
+   int(Instance.NumL1S1) + '|' +  
+   int(Instance.NumL1S2) + '|' +  
+   int(Instance.NumL1S3) + '|' +  
+   int(ServiceInstance.NumL2) + '|' +   
+   int(Instance.SiteS1Status) + '|' +   
+   int(Instance.SiteS2Status) + '|' +   
+   int(Instance.SiteS3Status) + '|' +  
+   int(Instance.SiteS4Status);
+    
+   EnrichmentAttributesText =  
+   ServiceInstance.Access + '|' +
+   ServiceInstance.Priority + '|' +
+   ServiceInstance.GeoArea + '|' +
+   ServiceInstance.GeoLocation + '|' +
+   ServiceInstance.Region;
+} 
+
+/*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+function file_status_for_site_serviceevent ( ServiceInstance, StatusText, ServiceText, NewStatus, StatusAttributesText, EnrichmentAttributesText) {
+
+
+   now = getdate(); 
+   
+   millisec = JavaCall("java.lang.System",null,"currentTimeMillis",null)%1000;
+   if (millisec < 10) {subsecond_string = ".00" + String(millisec) + "000"; }
+   else { if (millisec < 100) {subsecond_string = ".0" + String(millisec) + "000"; }
+   else {subsecond_string = "." + String(millisec) + "000";}}
+   // log("subsecond_string=[" + subsecond_string + "]");
+   nowts =  localtime(now,"yyyy-MM-dd HH:mm:ss") + subsecond_string;
+   p_UPDATED_UNIX = now;
+   p_UPDATED_SQL = nowts; 
+
+   line2write = ""; 
+   line2write =  
+   StatusAttributesText + '|' + 
+   StatusText + '|' +  
+   ServiceText + '|' +  
+   int(NewStatus) + '|' + 
+   p_UPDATED_UNIX + '|' +  
+   p_UPDATED_SQL + '|' +
+   '0' + '|' +
+   EnrichmentAttributesText 
+   + '\n'; 
+
+   log("L3_STATUS_LINE|"+line2write);
+ 
+} 
+ 
+/*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+function generate_statustext_for_l3_serviceevent (ServiceInstance, Instance, StatusText) {
+
+  startstmilli = JavaCall("java.lang.System",null,"currentTimeMillis",null);   
+   
+NumS1Cells =  int(ServiceInstance.NumS1Cells);
+NumS2Cells =  int(ServiceInstance.NumS2Cells);
+NumS3Cells =  int(ServiceInstance.NumS3Cells); 
+ 
+ 
+BadS1VCells = length(Instance.bad2gv); DegrS1VCells = length(Instance.degr2gv); 
+GoodS1VCells = NumS1Cells - (BadS1VCells + DegrS1VCells); 
+BadS2VCells = length(Instance.bad3gv); DegrS2VCells = length(Instance.degr3gv); 
+GoodS2VCells = NumS2Cells - (BadS2VCells + DegrS2VCells);
+BadS3VCells = length(Instance.badS3v); DegrS3VCells = length(Instance.degrS3v); 
+GoodS3VCells = NumS3Cells - (BadS3VCells + DegrS3VCells); 
+
+BadS1MCells = length(Instance.bad2gm); DegrS1MCells = length(Instance.degr2gm); 
+GoodS1MCells = NumS1Cells - (BadS1MCells + DegrS1MCells);
+BadS2MCells = length(Instance.bad3gm); DegrS2MCells = length(Instance.degr3gm); 
+GoodS2MCells = NumS2Cells - (BadS2MCells + DegrS2MCells);
+BadS3MCells = length(Instance.badS3m); DegrS3MCells = length(Instance.degrS3m); 
+GoodS3MCells = NumS3Cells - (BadS3MCells + DegrS3MCells);  
+
+BadS1DCells = length(Instance.bad2gd); DegrS1DCells = length(Instance.degr2gd); 
+GoodS1DCells = NumS1Cells - (BadS1DCells + DegrS1DCells);
+BadS2DCells = length(Instance.bad3gd); DegrS2DCells = length(Instance.degr3gd); 
+GoodS2DCells = NumS2Cells - (BadS2DCells + DegrS2DCells);
+BadS3DCells = length(Instance.badS3d); DegrS3DCells = length(Instance.degrS3d); 
+GoodS3DCells = NumS3Cells - (BadS3DCells + DegrS3DCells); 
+ 
+StatusS1VCellsText =   " S1: " + BadS1VCells + "/" + DegrS1VCells + "/" + GoodS1VCells + " of "+ int(ServiceInstance.NumS1Cells);
+StatusS1MCellsText =   " S1: " + BadS1MCells + "/" + DegrS1MCells + "/" + GoodS1MCells + " of "+ int(ServiceInstance.NumS1Cells);
+StatusS1DCellsText =   " S1: " + BadS1DCells + "/" + DegrS1DCells + "/" + GoodS1DCells + " of "+ int(ServiceInstance.NumS1Cells); 
+
+StatusS2VCellsText =   " S2: " + BadS2VCells + "/" + DegrS2VCells + "/" + GoodS2VCells + " of "+ int(ServiceInstance.NumS2Cells);
+StatusS2MCellsText =   " S2: " + BadS2MCells + "/" + DegrS2MCells + "/" + GoodS2MCells + " of "+ int(ServiceInstance.NumS2Cells);
+StatusS2DCellsText =   " S2: " + BadS2DCells + "/" + DegrS2DCells + "/" + GoodS2DCells + " of "+ int(ServiceInstance.NumS2Cells); 
+
+StatusS3VCellsText =   " S3: " + BadS3VCells + "/" + DegrS3VCells + "/" + GoodS3VCells + " of "+ int(ServiceInstance.NumS3Cells);
+StatusS3MCellsText =   " S3: " + BadS3MCells + "/" + DegrS3MCells + "/" + GoodS3MCells + " of "+ int(ServiceInstance.NumS3Cells);
+StatusS3DCellsText =   " S3: " + BadS3DCells + "/" + DegrS3DCells + "/" + GoodS3DCells + " of "+ int(ServiceInstance.NumS3Cells); 
+
+if (Instance.SiteS1Status = 5) { StatusS1Text = "DOWN " ; } else { 
+if (Instance.SiteS1Status = 3) { StatusS1Text = "DEGR " ; } else { StatusS1Text = "UP " ; }
+} 
+if (Instance.SiteS2Status = 5) { StatusS2Text = "DOWN " ; } else { 
+if (Instance.SiteS2Status = 3) { StatusS2Text = "DEGR " ; } else { StatusS2Text = "UP " ; }
+} 
+if (Instance.SiteS3Status = 5) { StatusS3Text = "DOWN " ; } else { 
+if (Instance.SiteS3Status = 3) { StatusS3Text = "DEGR " ; } else { StatusS3Text = "UP " ; }
+} 
+
+if (ServiceInstance.ServiceClassifier = 'S1only') {
+StatusVCellsText =  StatusS1VCellsText;
+StatusMCellsText =  StatusS1MCellsText;
+StatusDCellsText =  StatusS1DCellsText;
+StatusNetworksText = "S1:("+StatusS1Text+")";
+}
+
+if (ServiceInstance.ServiceClassifier = 'S2only') {
+StatusVCellsText =  StatusS2VCellsText;
+StatusMCellsText =  StatusS2MCellsText;
+StatusDCellsText =  StatusS2DCellsText;
+StatusNetworksText = "S2:("+StatusS2Text+")";
+}
+
+if (ServiceInstance.ServiceClassifier = 'S3only') {
+StatusVCellsText =  StatusS3VCellsText;
+StatusMCellsText =  StatusS3MCellsText;
+StatusDCellsText =  StatusS3DCellsText;
+StatusNetworksText = "S3:("+StatusS3Text+")";
+} 
+
+
+if (ServiceInstance.ServiceClassifier = 'S1S2') { 
+StatusVCellsText =  StatusS1VCellsText + " " + StatusS2VCellsText;
+StatusMCellsText =  StatusS1MCellsText + " " + StatusS2MCellsText;
+StatusDCellsText =  StatusS1DCellsText + " " + StatusS2DCellsText;
+StatusNetworksText = "S1:("+StatusS1Text+") S2:("+StatusS2Text+")";
+} 
+
+if (ServiceInstance.ServiceClassifier = 'S1S3') { 
+StatusVCellsText =  StatusS1VCellsText + " " + StatusS3VCellsText;
+StatusMCellsText =  StatusS1MCellsText + " " + StatusS3MCellsText; 
+StatusDCellsText =  StatusS1DCellsText + " " + StatusS3DCellsText; 
+StatusNetworksText = "S1:("+StatusS1Text+") S3:("+StatusS3Text+")";
+} 
+
+
+if (ServiceInstance.ServiceClassifier = 'S2S3') { 
+StatusVCellsText =  StatusS2VCellsText + " " + StatusS3VCellsText; 
+StatusMCellsText =  StatusS2MCellsText + " " + StatusS3MCellsText;
+StatusDCellsText =  StatusS2DCellsText + " " + StatusS3DCellsText; 
+StatusNetworksText = "S2:("+StatusS2Text+") S3:("+StatusS3Text+")";
+}
+
+if (ServiceInstance.ServiceClassifier = 'S1S2S3') { 
+StatusVCellsText =  StatusS1VCellsText + " " + StatusS2VCellsText + " " + StatusS3VCellsText; 
+StatusMCellsText =  StatusS1MCellsText + " " + StatusS2MCellsText + " " + StatusS3MCellsText; 
+StatusDCellsText =  StatusS1DCellsText + " " + StatusS2DCellsText + " " + StatusS3DCellsText; 
+StatusNetworksText = "S1:("+StatusS1Text+") S2:("+StatusS2Text+") S3:("+StatusS3Text+")";
+}
+
+ 
+if (Instance.L3S4Status = 5) { StatusEnvVText = "DOWN " ; } else { 
+if (Instance.L3S4Status = 3) { StatusEnvText = "DEGR "  ; } else { StatusEnvText = "UP " ; }
+}
+
+if (Instance.SiteVStatus = 5) { StatusVText = "DOWN " + StatusVCellsText; } else { 
+if (Instance.SiteVStatus = 3) { StatusVText = "DEGR " + StatusVCellsText; } else { StatusVText = "UP " + StatusVCellsText; }
+}
+
+if (Instance.SiteMStatus = 5) { StatusMText = "DOWN " + StatusMCellsText; } else { 
+if (Instance.SiteMStatus = 3) { StatusMText = "DEGR " + StatusMCellsText; } else { StatusMText = "UP " + StatusMCellsText; }
+}
+
+if (Instance.SiteDStatus = 5) { StatusDText = "DOWN " + StatusDCellsText; } else { 
+if (Instance.SiteDStatus = 3) { StatusDText = "DEGR " + StatusDCellsText; } else { StatusDText = "UP " + StatusDCellsText; }
+} 
+
+
+StatusText = "SITE : " + ServiceInstance.ServiceClassifier + " : " + RExtract(ServiceInstance.ServiceInstanceName,'(\w+)_SITA') + " Env(" + StatusEnvText + ") Voice(" + StatusVText + ") Data(" + StatusDText + ") Messaging(" + StatusMText + ") " + StatusNetworksText;
+  
+
+}
+/*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+function generate_servicetext_for_l3_serviceevent ( Instance, ServiceText) {
+ startstmilli = JavaCall("java.lang.System",null,"currentTimeMillis",null);
+ 
+L3S1Status = Instance.SiteS1Status;
+L3S2Status = Instance.SiteS2Status;
+L3S3Status = Instance.SiteS3Status;
+
+if ((L3S1Status = 5) AND (L3S2Status = 5) AND (L3S3Status = 5)) { ServiceText = "ALL SERVICES DOWN"; }
+if ((L3S1Status = 5) AND (L3S2Status = 5) AND (L3S3Status = 3)) { ServiceText = "S1 and S2 SERVICES DOWN, S3 SERVICES REDUCED"; }
+if ((L3S1Status = 5) AND (L3S2Status = 5) AND (L3S3Status = 0)) { ServiceText = "S1 and S2 SERVICES DOWN, S3 SERVICES UP"; }
+if ((L3S1Status = 5) AND (L3S2Status = 3) AND (L3S3Status = 5)) { ServiceText = "S1 and S3 SERVICES DOWN, S2 SERVICES REDUCED"; }
+if ((L3S1Status = 5) AND (L3S2Status = 3) AND (L3S3Status = 3)) { ServiceText = "S1 SERVICES DOWN, S3 and S2 SERVICES REDUCED"; }
+if ((L3S1Status = 5) AND (L3S2Status = 3) AND (L3S3Status = 0)) { ServiceText = "S1 SERVICES DOWN, S2 SERVICES REDUCED, S3 SERVICES UP"; }
+if ((L3S1Status = 5) AND (L3S2Status = 0) AND (L3S3Status = 5)) { ServiceText = "S1 and S3 SERVICES DOWN, S2 SERVICES UP"; }
+if ((L3S1Status = 5) AND (L3S2Status = 0) AND (L3S3Status = 3)) { ServiceText = "S1 SERVICES DOWN, S3 SERVICES REDUCED, S2 SERVICES UP"; }
+if ((L3S1Status = 5) AND (L3S2Status = 0) AND (L3S3Status = 0)) { ServiceText = "S1 SERVICES DOWN, S3 and S2 SERVICES UP"; }
+if ((L3S1Status = 3) AND (L3S2Status = 5) AND (L3S3Status = 5)) { ServiceText = "S3 and S2 SERVICES DOWN, S1 SERVICES REDUCED"; }
+if ((L3S1Status = 3) AND (L3S2Status = 5) AND (L3S3Status = 3)) { ServiceText = "S2 SERVICES DOWN, S3 and S1 SERVICES REDUCED"; }
+if ((L3S1Status = 3) AND (L3S2Status = 5) AND (L3S3Status = 0)) { ServiceText = "S2 SERVICES DOWN, S1 SERVICES REDUCED, S3 SERVICES UP"; }
+if ((L3S1Status = 3) AND (L3S2Status = 3) AND (L3S3Status = 5)) { ServiceText = "S3 SERVICES DOWN, S1 and S2 SERVICES UP"; }
+if ((L3S1Status = 3) AND (L3S2Status = 3) AND (L3S3Status = 3)) { ServiceText = "ALL SERVICES REDUCED"; }
+if ((L3S1Status = 3) AND (L3S2Status = 3) AND (L3S3Status = 0)) { ServiceText = "S1 and S2 SERVICES REDUCED, S3 SERVICES UP "; }
+if ((L3S1Status = 3) AND (L3S2Status = 0) AND (L3S3Status = 5)) { ServiceText = "S3 SERVICES DOWN, S1 SERVICES REDUCED, S2 SERVICES UP"; }
+if ((L3S1Status = 3) AND (L3S2Status = 0) AND (L3S3Status = 3)) { ServiceText = "S1 and S3 SERVICES REDUCED, S2 SERVICES UP"; }
+if ((L3S1Status = 3) AND (L3S2Status = 0) AND (L3S3Status = 0)) { ServiceText = "S1 SERVICES REDUCED, S3 and S2 SERVICES UP"; }
+if ((L3S1Status = 0) AND (L3S2Status = 5) AND (L3S3Status = 5)) { ServiceText = "S3 and S2 SERVICES DOWN, S1 SERVICES UP"; }
+if ((L3S1Status = 0) AND (L3S2Status = 5) AND (L3S3Status = 3)) { ServiceText = "S2 SERVICES DOWN, S3 SERVICES REDUCED, S1 SERVICES UP"; }
+if ((L3S1Status = 0) AND (L3S2Status = 5) AND (L3S3Status = 0)) { ServiceText = "S2 SERVICES DOWN, S1 and S3 SERVICES UP"; }
+if ((L3S1Status = 0) AND (L3S2Status = 3) AND (L3S3Status = 5)) { ServiceText = "S3 SERVICES DOWN, S2 SERVICES UP, S1 SERVICES UP"; }
+if ((L3S1Status = 0) AND (L3S2Status = 3) AND (L3S3Status = 3)) { ServiceText = "S3 and S2 SERVICES REDUCED, S1 SERVICES UP"; }
+if ((L3S1Status = 0) AND (L3S2Status = 3) AND (L3S3Status = 0)) { ServiceText = "S2 SERVICES REDUCED, S3 and S1 SERVICES UP "; }
+if ((L3S1Status = 0) AND (L3S2Status = 0) AND (L3S3Status = 5)) { ServiceText = "S3 SERVICES DOWN, S1 and S2 SERVICES UP"; }
+if ((L3S1Status = 0) AND (L3S2Status = 0) AND (L3S3Status = 3)) { ServiceText = "S3 SERVICES REDUCED, S1 and S2 SERVICES UP"; }
+if ((L3S1Status = 0) AND (L3S2Status = 0) AND (L3S3Status = 0)) { ServiceText = "ALL SERVICES UP"; }
+
+if (Instance.L3S4Status = 5) { ServiceText = "S4 DOWN, " + ServiceText;}
+if (Instance.L3S4Status = 3) { ServiceText = "S4 DEGRADED, " + ServiceText;}
+if (Instance.L3S4Status = 0) { ServiceText = "S4 UP, " + ServiceText;}
+endstmilli = JavaCall("java.lang.System",null,"currentTimeMillis",null);  
+     durstmilli = endstmilli - startstmilli; 
+//   log("Generating servicetext took [" + durstmilli +
+//         "ms] for " + ServiceInstance.ServiceInstanceName);
+ 
+}
+
+/*---------------------------------------------------------------------------------*/
+
+function update_text_for_l3_omnibus_serviceevent(objectname, SummaryText, ServiceText) {
+
+ startevmilli = JavaCall("java.lang.System",null,"currentTimeMillis",null);  
+    
+ DataType = "ObjectServer";
+ Filter = "Class = 12000 and RAD_ServiceName = '" + objectname + "'";
+ CountOnly = False;
+
+ EventRows = GetByFilter(DataType, Filter, CountOnly);
+ EventCount = Num;
+ if (EventCount != 1) {
+  log("Updatetext DB Error : Filter = " + Filter); 
+  log("Updatetext DB Error : Find Object Server Event for subsequent update " + objectname +   " : RowsReturned = " + EventCount);
+ } 
+  else {
+     
+    EventRow = EventRows[0];
+    EventRow.Summary = SummaryText;
+    EventRow.AlertKey = StatusText;
+    EventRow.Service = ServiceText;
+    EventRow.RAD_SeenByImpact = 0;
+  }  
+  endevmilli = JavaCall("java.lang.System",null,"currentTimeMillis",null); 
+  durevmilli = endevmilli - startevmilli; 
+//  log("Processing Omnibus event update took [" + durevmilli + "ms] for " + objectname);  
+}

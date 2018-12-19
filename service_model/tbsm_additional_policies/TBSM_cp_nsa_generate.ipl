@@ -1,0 +1,61 @@
+log("Entering GenerateNSAEvents: [" + "]");
+ 
+ ServiceSource = "TBSMDatabase";
+ NSASource = "OutputObjectServer_DS";
+
+ Query = "select Location,count(*) as EvCount from alerts.status " +
+         "where Location <> '' and Location not in (select Location from alerts.status where Class=12000 ) " + 
+         "and Location not in (select Location from alerts.status where Class=12010 and AlertKey = 'Events Non Service Affecting') " + 
+         "and RAD_UserFunctionName = ''" +
+         "and (Class <> 12010 and Class <> 12000) and Severity > 0 group by Location";
+ CountOnly = false;
+ MySites = DirectSQL(NSASource,Query,CountOnly);
+
+  log("GenerateNSAEvents for Location [" + Num  + "]");
+ NumSites = Num;
+ index = 0;
+ while (index < NumSites) {
+ NewIdentifier = "L3: " + MySites[index].Location + " Non Service Affecting Events Exist ";
+ ObjectServerSource = "OutputObjectServer";
+ Filter = "Identifier = '" + NewIdentifier + "'";
+ SiteExistingEvents = GetByFilter(ObjectServerSource,Filter, false);
+ if (Num = 1){
+  // do nothing, event created already from some other policy
+  index = index + 1;
+ } else {
+ SiteEvent = NewEvent("TBSMOMNIbusEventReader");
+ SiteEvent.EventReaderName =  "TBSMOMNIbusEventReader"; 
+ SiteEvent.Identifier = NewIdentifier;
+
+Query = "SELECT * FROM L3_INFO WHERE L3 = '" + MySites[index].Location + "'";
+ CountOnly = false;
+ MyServices = DirectSQL(ServiceSource,Query,CountOnly);
+ServiceCount = Num;
+if ((ServiceCount = 0) OR (ServiceCount > 1)) {
+log("SiteAllServices_SEE DB Error : FirstTimeUpdate Find Service Info for " + EventContainer.Location +
+  " : RowsReturned = " + ServiceCount);
+} else {
+ServiceRow = MyServices[0];
+SiteEvent.Location = ServiceRow.Location;
+SiteType = ServiceRow.SiteType;
+SiteEvent.Parent = ServiceRow.Region;
+SiteEvent.RAD_SeenByImpact = 1; 
+}
+ SiteEvent.Summary = "L3 : on " +
+   MySites[index].Location + " : Non Service Affecting Events [" + MySites[index].EvCount + "] Exist for this Location ";
+ SiteEvent.AlertKey = "Events Non Service Affecting";
+ SiteEvent.Location =  MySites[index].Location;
+ SiteEvent.Node =  MySites[index].Location + '_L3O';
+ SiteEvent.VFElementName = MySites[index].Location + '_L3O';
+ SiteEvent.Severity = 2;
+ SiteEvent.Tally = 1;
+ SiteEvent.Type = 1;
+ SiteEvent.Class = 12010;
+ SiteEvent.FirstOccurrence = getdate();
+ SiteEvent.LastOccurrence = getdate();
+ ReturnEvent(SiteEvent);
+ 
+ index = index + 1;
+}
+}
+log("Leaving GenerateNSAEvents: [" + "]");

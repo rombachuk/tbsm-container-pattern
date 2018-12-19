@@ -1,0 +1,147 @@
+ log("Entering UpdateNSAEvents: [" + "]");
+
+// Remove NSA  Events which are no longer needed by marking them clear
+// Case 1 - no longer any events except this SITE NSA Event (count=1) 
+ ObjectServerSource = "OutputObjectServer";
+ NSASource = "OutputObjectServer_DS";
+ TESource = "OutputObjectServer_DS";
+
+ Query = "select Location,count(*) as EvCount from alerts.status " +
+         "where Location in (select Location from alerts.status where Class=12010 and Severity > 0 and AlertKey = 'Events Non Service Affecting') " + 
+         "and Severity > 0 group by Location";
+ CountOnly = false;
+ Mys = DirectSQL(NSASource,Query,CountOnly);
+
+ log("UpdateNSAEvents Scanning s which may no longer have  NSAEvents [" + Num  + "]");
+ Nums = Num;
+ index = 0;
+ changedindex = 0;
+ while (index < Nums) {
+ ThisIdentifier = "L3: " + Mys[index].Location + " Non Service Affecting Events Exist ";
+ 
+ Filter = "Identifier = '" + ThisIdentifier + "'";
+ ExistingEvents = GetByFilter(ObjectServerSource,Filter, false);
+ // log("UpdateNSAEvents [" + @ElementName4 + "] Existing Event Count = " + Num);
+ if (Num = 1){
+  if (Mys[index].EvCount = 1) { 
+  ExistingEvents[0].Severity = 0;  
+  ExistingEvents[0].Summary = "L3 : on " +
+   Mys[index].Location + " : Non Service Affecting Events [" + Mys[index].EvCount + "] Exist for this Location"; 
+  ExistingEvents[0].LastOccurrence = getdate();
+  changedindex = changedindex + 1;
+  }
+  CommitChanges();
+  index = index + 1;
+ } else {
+  log("UpdateNSAEvents DB Error : Could not find expected existing NSA Event for  " + Mys[index].Location +   " : RowsReturned = " + Num);
+  index = index + 1;
+}
+}
+log("UpdateNSAEvents S1: Cleared NSAEvents Cause No Events Remain = " + changedindex);
+
+
+// Remove NSA  Events which are no longer needed by marking them clear
+// Case 2 - we now have SAEvents as well, so we need to get rid of this one
+// Note that SAEvent is denoted by RAD_UserFunctionName field being not null
+NSASource = "OutputObjectServer_DS";
+ Query = "select Location,count(*) as EvCount from alerts.status " +
+         "where Location like 'RBS.*' " +
+         "and Location in (select Location from alerts.status where Class=12010 and Severity > 0 and AlertKey = ' Events Non Service Affecting') " + 
+         "and RAD_UserFunctionName != '' and Grade != 1004 " +
+         "and Severity > 0 group by Location";
+ CountOnly = false;
+ Mys = DirectSQL(NSASource,Query,CountOnly);
+
+ log("UpdateNSAEvents Scanning s which were NSA but now have SA Events [" + Num  + "]");
+ Nums = Num;
+ index = 0;
+ changedindex = 0;
+ while (index < Nums) {
+ // log("UpdateNSAEvents Step 2[" + @ElementName4 + "] Processing  " + index +
+ //   " " + Mys[index].Location + " " + Mys[index].EvCount);
+
+ ThisIdentifier = "SITE: " + Mys[index].Location + " Non Service Affecting Events Exist ";
+ 
+ ObjectServerSource = "OutputObjectServer";
+ Filter = "Identifier = '" + ThisIdentifier + "'";
+ ExistingEvents = GetByFilter(ObjectServerSource,Filter, false);
+ // log("UpdateNSAEvents [" + @ElementName4 + "] Existing Event Count = " + Num);
+ if (Num = 1){
+  if (Mys[index].EvCount >= 1) { 
+  ExistingEvents[0].Severity = 0;  
+  changedindex = changedindex + 1;
+  EvCategory =  'RBS SITE ';  
+  ExistingEvents[0].Summary = EvCategory + ": on " +
+   Mys[index].Location + " : Service Affecting Events [" + Mys[index].EvCount + "] Exist for this  - Removing NSA Event"; 
+  ExistingEvents[0].LastOccurrence = getdate();
+  }
+  CommitChanges();
+  index = index + 1;
+ } else {
+  log("UpdateNSAEvents DB Error : Could not find expected existing NSA Event for  " + Mys[index].Location +   " : RowsReturned = " + Num);
+  index = index + 1;
+}
+}
+log("UpdateNSAEvents S2: Cleared NSAEvents Cause SAEvents Now exist = " + changedindex);
+
+// Now scan for changed number of NSA events on Existing NSA s 
+ NSASource = "OutputObjectServer_DS";
+ Query = "select Location,count(*) as EvCount from alerts.status " +
+         "where Location like 'RBS.*' " +
+         "and Location in (select Location from alerts.status where Class=12010 and Severity > 0 and AlertKey = ' Events Non Service Affecting') " + 
+         "and RAD_UserFunctionName = '' and Grade != 1004 " +
+         "and (Class<>12000 and Class <> 12010) and Severity > 0 group by Location";
+ CountOnly = false;
+ Mys = DirectSQL(NSASource,Query,CountOnly);
+
+ log("UpdateNSAEvents for s having NSAEvents [" + Num  + "]");
+ Nums = Num;
+ index = 0;
+ changedindex = 0;
+ while (index < Nums) {
+//  log("UpdateNSAEvents Step 3[" + @ElementName4 + "] Processing  " + index +
+//    " " + Mys[index].Location + " " + Mys[index].EvCount);
+
+ ThisIdentifier = "SITE: " + Mys[index].Location + " Non Service Affecting Events Exist ";
+ 
+ ObjectServerSource = "OutputObjectServer";
+ Filter = "Identifier = '" + ThisIdentifier + "'";
+ ExistingEvents = GetByFilter(ObjectServerSource,Filter, false);
+ // log("UpdateNSAEvents [" + @ElementName4 + "] Existing Event Count = " + Num);
+ if (Num = 1){
+  if (Mys[index].EvCount = 0) { ExistingEvents[0].Severity = 0;  }
+  else { ExistingEvents[0].Severity = 2;  }
+  EvCategory =  'RBS SITE ';  
+  ExistingEvents[0].Summary = EvCategory + ": on " +
+   Mys[index].Location + " : Non Service Affecting Events [" + Mys[index].EvCount + "] Exist for this  "; 
+  ExistingEvents[0].LastOccurrence = getdate();
+
+// TicketedEvents Check
+
+ TicketColumn = 'TTNum';
+ TEQuery = "select count(*) as TECount from alerts.status " +
+         "where Location = '" + Mys[index].Location + "' and " + TicketColumn + " != '' " +
+         "and (Class <> 12000 and Class <> 12010) and Severity > 0 ";
+ CountOnly = false;
+ MyTEs = DirectSQL(TESource,TEQuery,CountOnly);
+ TEServiceCount = Num;
+ if (TEServiceCount != 1) {
+ log("UpdateNSAEvents DB Error : ServiceCounts Ticketed Events Check " + Mys[index].Location +
+  " : RowsReturned = " + TEServiceCount); }
+else {
+ TERow = MyTEs[0];
+ if (TERow.TECount > 0) { ExistingEvents[0].AlertGroup = "Tickets Linked to [" + TERow.TECount + "] Events at this "; }
+ else { ExistingEvents[0].AlertGroup = "No Tickets Linked to Events at this "; }
+}
+
+  CommitChanges();
+  changedindex = changedindex + 1;
+  index = index + 1;
+ } else {
+  log("UpdateNSAEvents DB Error : Could not find expected existing NSA Event for  " + Mys[index].Location +   " : RowsReturned = " + Num);
+  index = index + 1;
+}
+}
+
+log("UpdateNSAEvents S3: Updated NSAEvents NSA Events still exist  = " + changedindex);
+ log("Leaving UpdateNSAEvents: [" + "]");
