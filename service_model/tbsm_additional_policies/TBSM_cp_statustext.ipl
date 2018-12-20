@@ -69,9 +69,9 @@ NumL1S2 =  int(ServiceInstance.NumL1S2);
 NumL1S3 =  int(ServiceInstance.NumL1S3); 
  
  
-BadL1S1 = length(Instance.bads1); DegrL1S1 = length(Instance.degrs1);  
-BadL1S2 = length(Instance.bads2); DegrL1S2 = length(Instance.degrs2); 
-BadL1S3 = length(Instance.bads3); DegrL1S3 = length(Instance.degrs3); 
+BadL1S1 = length(Instance.badl1s1); DegrL1S1 = length(Instance.degrl1s1);  
+BadL1S2 = length(Instance.badl1s2); DegrL1S2 = length(Instance.degrl1s2); 
+BadL1S3 = length(Instance.badl1s3); DegrL1S3 = length(Instance.degrl1s3); 
 
 GoodL1S1 = NumL1S1 - (BadL1S1 + DegrL1S1);
 GoodL1S2 = NumL1S2 - (BadL1S2 + DegrL1S2);
@@ -178,7 +178,7 @@ if ((L3S1Status = 0) AND (L3S2Status = 3) AND (L3S3Status = 3)) { ServiceText = 
 if ((L3S1Status = 0) AND (L3S2Status = 3) AND (L3S3Status = 0)) { ServiceText = "S2 SERVICES REDUCED, S3 and S1 SERVICES UP "; }
 if ((L3S1Status = 0) AND (L3S2Status = 0) AND (L3S3Status = 5)) { ServiceText = "S3 SERVICES DOWN, S1 and S2 SERVICES UP"; }
 if ((L3S1Status = 0) AND (L3S2Status = 0) AND (L3S3Status = 3)) { ServiceText = "S3 SERVICES REDUCED, S1 and S2 SERVICES UP"; }
-if ((L3S1Status = 0) AND (L3S2Status = 0) AND (L3S3Status = 0)) { ServiceText = "ALL SERVICES UP"; }
+if ((L3S1Status = 0) AND (L3S2Status = 0) AND (L3S3Status = 0)) { ServiceText = "S1S2S3 SERVICES UP"; }
 
 if (Instance.L3S4Status = 5) { ServiceText = "S4 DOWN, " + ServiceText;}
 if (Instance.L3S4Status = 3) { ServiceText = "S4 DEGRADED, " + ServiceText;}

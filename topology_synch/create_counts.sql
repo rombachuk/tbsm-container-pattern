@@ -61,12 +61,12 @@ DO
   (SELECT l1 from  
   (SELECT  l1 from  l1_s1 where l3 = v_L3  group by l1
    UNION SELECT  l1 from  l1_s2 where l3 = v_L3  group by l1
-   UNION SELECT  l1 from  l1_s3 where l3 = v_L3  group by l1) );
+   UNION SELECT  l1 from  l1_s3 where l3 = v_L3  group by l1) group by l1);
  SELECT COUNT(*) INTO v_cntl2 from
   (SELECT l2 from  
   (SELECT  l2 from  l1_s1 where l3 = v_L3  group by l2
    UNION SELECT  l2 from  l1_s2 where l3 = v_L3  group by l2
-   UNION SELECT  l2 from  l1_s3 where l3 = v_L3  group by l2) );
+   UNION SELECT  l2 from  l1_s3 where l3 = v_L3  group by l2) group by l2);
 
  
  SELECT coalesce(max(ACTIVEEVENTSFLAG),0) into v_ACTIVEFLAG from L3_COUNTS where  l3 = v_L3 ; /* Get current events flag */
