@@ -1,0 +1,183 @@
+//******************************************************* {COPYRIGHT-TOP-RM} ***
+// Licensed Materials - Property of IBM
+//
+// "Restricted Materials of IBM"
+//
+// 5724-C51
+//
+// (C) Copyright IBM Corp. 2011 All Rights Reserved.
+//
+// US Government Users Restricted Rights - Use, duplication, or
+// disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+//******************************************************* {COPYRIGHT-END-RM} ***
+/* This policy contains a list of functions that can be 
+   used to calculate the status of the attribute. You
+   can create new functions by following the format of the 
+   existing ones- namely, they should be in the form 
+   of function X(ChildrenStatusArray, AllChildrenArray, 
+  ServiceInstance, Status) { <functionBody >}.
+   The job of the function is to set the Status variable to
+   a number that RAD will use for the value of this attribute.
+   The input values are as follows:
+   ChildrenStatusArray: an array of numbers for the statuses of
+   the child attribute of child instances of the child template.
+   (the child attribute and child template are configured in this
+   attribute).
+   AllChildrenArray: an array of ServiceInstance objects of all 
+   children of the instance being calculated which belong to the
+   child template configured in this attribute. Any attribute of
+   these child instances can be accessed by 
+   AllChildrenArray[i].StateModelNode.<AttributeName>.Value, where
+   you must provide the attribute name.
+   ServiceInstance: the ServiceInstance object whose attribute value
+   is being calculated
+   Status: the variable you must set in the policy
+*/
+
+
+/**
+ This function calculates the Standard Deviation of the Child
+ attributes 
+*/
+function StandardDeviation(ChildrenStatusArray, AllChildrenArray, ServiceInstance, Status) {
+ i = 0;
+ Sum = 0;
+ NumChildren = 0;
+ Average = 0;
+ // first find the average of the values
+ while (ChildrenStatusArray[i] <> NULL) {
+   Sum = Sum + ChildrenStatusArray[i];
+   NumChildren = NumChildren + 1;
+   i = i + 1;
+ }
+ if (NumChildren > 0) {
+   Average = Sum / NumChildren;
+ }
+
+ // Now find the variance of the values
+ i = 0;
+ SumOfDifferenceFromMeanSquared = 0;
+ while (ChildrenStatusArray[i] <> NULL) {
+   DifferenceFromMean = ChildrenStatusArray[i] - Average;
+   DifferenceFromMeanSquared = DifferenceFromMean * DifferenceFromMean;
+   SumOfDifferenceFromMeanSquared = SumOfDifferenceFromMeanSquared + DifferenceFromMeanSquared;
+   i = i + 1;
+ }
+ Variance = 0;
+ if (NumChildren > 0) {
+  Variance = SumOfDifferenceFromMeanSquared / NumChildren;
+ }
+ StandardDeviation = sqrt(Variance);
+ Status = StandardDeviation;
+}
+
+/**
+ This function returns the number of children whose child attribute
+ is Bad (equal to 5). This function is intended to be used when
+ the child attribute configured is OverallAttribute
+*/
+function NumberOfBadChildren(ChildrenStatusArray, AllChildrenArray, ServiceInstance, Status) {
+ i = 0;
+ Count = 0;
+ while (ChildrenStatusArray[i] <> NULL) {
+   if (ChildrenStatusArray[i] = 5) {
+     Count = Count + 1;
+   }
+  i = i + 1;
+ }
+ Status = Count;
+}
+
+/**
+ This function returns the number of children whose child attribute
+ is Bad (equal to 5). This function is intended to be used when
+ the child attribute configured is OverallAttribute
+*/
+function NumberOfMarginalChildren(ChildrenStatusArray, AllChildrenArray, ServiceInstance, Status) {
+ i = 0;
+ Count = 0;
+ while (ChildrenStatusArray[i] <> NULL) {
+   if (ChildrenStatusArray[i] = 3) {
+     Count = Count + 1;
+   }
+  i = i + 1;
+ }
+ Status = Count;
+} 
+
+/**
+* Status will be 5 if any required child is Bad or if all Optional children are Bad
+* Status will be 3 if worst required child is Marginal or if any but not all optional children are Bad
+* Otherwise status will be 0
+*/
+function StatusOfChildren(ChildrenStatusArray, AllChildrenArray, ServiceInstance, Status) {
+   i = 0;
+   Status = 0;
+   BadOptional = false;
+   NonBadOptional = false;
+   ParentName = ServiceInstance.serviceinstancename;
+   while (AllChildrenArray[i] <> NULL) {
+      
+      ChildInstance = AllChildrenArray[i];
+        ChildStatus =  ChildInstance.StateModelNode.OverallAttribute.Value; // OverallAttribute of child
+      ChildType = "Required";
+      parent1name = ChildInstance.parent1name;
+       log("ParentName is " + ParentName + " and parent1name of child is " + parent1name);
+      if (parent1name = ParentName) {
+           log("OK we match");
+          if (ChildInstance.parent1value = "Optional") {
+             ChildType = "Optional"; 
+                log("OK we're optional");
+         }
+      }
+     parent2name = ChildInstance.parent2name;
+      if (parent2name = ParentName) {
+          if (ChildInstance.parent2value = "Optional") {
+             ChildType = "Optional"; 
+         }
+      }
+     parent3name = ChildInstance.parent3name;
+      if (parent3name = ParentName) {
+          if (ChildInstance.parent3value = "Optional") {
+             ChildType = "Optional"; 
+         }
+      }
+    parent4name = ChildInstance.parent4name;
+      if (parent4name = ParentName) {
+          if (ChildInstance.parent4value = "Optional") {
+             ChildType = "Optional"; 
+         }
+      }
+      if (ChildStatus = 5 and ChildType = "Required") {
+         Status = 5;
+       }
+       if (ChildStatus = 3 and ChildType = "Required") {
+         if (Status < 3) {
+             Status = 3;
+          }
+       }
+       if (ChildStatus = 5 and ChildType = "Optional") {
+              log("Chidl is bad and type is optional");
+           if (Status < 3) {
+              Status = 3;
+           }
+           BadOptional = true;
+       }
+         log("ChildStatus is " + ChildStatus + " and ChildType is " + ChildType + " and childname is " + ChildInstance.serviceinstancename);
+       if (ChildType = "Optional" and ChildStatus < 5) {
+           NonBadOptional = true;
+        }
+       
+       i = i + 1;
+   }
+
+   if (BadOptional = true and NonBadOptional = false) {
+     // all optional children are bad
+      Status = 5;
+   }
+  
+}
+
+
+
+

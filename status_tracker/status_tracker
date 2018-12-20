@@ -1,16 +1,16 @@
 #!/bin/sh
 #
-# sitestatus-tracker   Tracks the SITE_STATUS policy and copies value to db & omnibus
+# status_tracker   Tracks the key policy and copies value to db & omnibus
 #                      with hysteresis - waits until value persists for some time
 #
 # chkconfig: 2345 99 75
 # description: 
 #
 BASE=/var/run
-PID=$BASE/sitestatus-tracker.pid
-LOG=$BASE/sitestatus-tracker.log
-LOCKFILE=/var/lock/subsys/sitestatus-tracker
-CMD='/home/bsmadmin/tbsmconfig-v8/ranstatus_python/sitestatus-tracker.sh /home/bsmadmin/tbsmconfig-v8/ranstatus_python'
+PID=$BASE/status_tracker.pid
+LOG=$BASE/status_tracker.log
+LOCKFILE=/var/lock/subsys/status_tracker
+CMD='/root/tbsm-container-pattern/status_tracker/status_tracker.sh /root/tbsm-container-pattern/status_tracker root'
 COMMAND="$CMD"
 
 USR=user
@@ -55,7 +55,7 @@ kill_cmd() {
     SIGNAL=""; MSG="Killing "
     while true
     do
-        LIST=`ps -ef | grep -v grep | grep -E 'TBSM_policylogger_SITEAGG_OVERALL|sitestatus-tracker.py' | awk '{print $2}'`
+        LIST=`ps -ef | grep -v grep | grep -E 'TBSM_policylogger_l3_overall |status_tracker.py' | awk '{print $2}'`
         if [ "$LIST" ]
         then
             echo; echo "$MSG $LIST" ; echo

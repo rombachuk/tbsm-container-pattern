@@ -1,0 +1,66 @@
+//******************************************************* {COPYRIGHT-TOP-RM} ***
+// Licensed Materials - Property of IBM
+//
+// "Restricted Materials of IBM"
+//
+// 5724-C51
+//
+// (C) Copyright IBM Corp. 2011 All Rights Reserved.
+//
+// US Government Users Restricted Rights - Use, duplication, or
+// disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+//******************************************************* {COPYRIGHT-END-RM} ***
+Type="OutputObjectServer";
+ObjectToCopy=CONTEXT;
+
+if (CONTEXT.ServiceInstanceBean.PrimaryTagName = 'level3overview') { SuppressCreate = 0; }
+else { SuppressCreate = 1;}
+
+
+ObjectToCopy.LastOccurrence = getdate();
+ObjectToCopy.FirstOccurrence = getdate();
+ 
+EventType = ObjectToCopy.Grade;
+
+// Comment next 3 uncommented lines to avoid sending purple numeric rule status events
+// IMPORTANT: if you comment the next 3 lines you need to change the first
+// uncommented "elseif" statement below to "if"
+// e.g. if (EventType = 4 AND ObjectToCopy.Severity <> 1)
+//if (ObjectToCopy.Severity = 1) {
+//  AddDataItem(Type, ObjectToCopy);
+//}
+
+// Comment next 3 lines to avoid sending color status events of numeric rule
+//if (EventType = 4 AND ObjectToCopy.Severity <> 1) {
+//  AddDataItem(Type, ObjectToCopy);
+//}
+
+
+//Comment next 3 lines to avoid sending overall instance status events
+// To avoid the consistency checker adding the events, you also need to add the property impact.consistency.depsonly=true to the file  tbsm/etc/TBSM_consistency.props and restart the data server.
+//else
+if (EventType = 7 AND SuppressCreate = 0) {
+ AddDataItem(Type, ObjectToCopy);
+
+}
+
+
+// Uncomment next 3 lines to send percentage and worst case rule status events
+// elseif (EventType = 6) {
+// AddDataItem(Type,ObjectToCopy);
+// }
+
+
+// Uncomment next 3 lines to send overall template status events
+// elseif (EventType = 5) {
+//  AddDataItem(Type, ObjectToCopy);
+// }
+
+
+// Uncomment next 3 lines to send incoming status rule status events
+// elseif (EventType = 3 AND ObjectToCopy.Severity <> 1) {
+// AddDataItem(Type, ObjectToCopy);
+// }
+
+
+

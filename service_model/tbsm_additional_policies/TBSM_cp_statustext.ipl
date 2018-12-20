@@ -14,10 +14,10 @@ function generate_allattributestext_for_l3_serviceevent ( ServiceInstance, Insta
    int(Instance.NumL1S2) + '|' +  
    int(Instance.NumL1S3) + '|' +  
    int(ServiceInstance.NumL2) + '|' +   
-   int(Instance.SiteS1Status) + '|' +   
-   int(Instance.SiteS2Status) + '|' +   
-   int(Instance.SiteS3Status) + '|' +  
-   int(Instance.SiteS4Status);
+   int(Instance.L3S1Status) + '|' +   
+   int(Instance.L3S2Status) + '|' +   
+   int(Instance.L3S3Status) + '|' +  
+   int(Instance.L3S4Status);
     
    EnrichmentAttributesText =  
    ServiceInstance.Access + '|' +
@@ -28,7 +28,7 @@ function generate_allattributestext_for_l3_serviceevent ( ServiceInstance, Insta
 } 
 
 /*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-function file_status_for_site_serviceevent ( ServiceInstance, StatusText, ServiceText, NewStatus, StatusAttributesText, EnrichmentAttributesText) {
+function file_status_for_l3_serviceevent ( ServiceInstance, StatusText, ServiceText, NewStatus, StatusAttributesText, EnrichmentAttributesText) {
 
 
    now = getdate(); 
@@ -64,124 +64,82 @@ function generate_statustext_for_l3_serviceevent (ServiceInstance, Instance, Sta
 
   startstmilli = JavaCall("java.lang.System",null,"currentTimeMillis",null);   
    
-NumS1Cells =  int(ServiceInstance.NumS1Cells);
-NumS2Cells =  int(ServiceInstance.NumS2Cells);
-NumS3Cells =  int(ServiceInstance.NumS3Cells); 
+NumL1S1 =  int(ServiceInstance.NumL1S1);
+NumL1S2 =  int(ServiceInstance.NumL1S2);
+NumL1S3 =  int(ServiceInstance.NumL1S3); 
  
  
-BadS1VCells = length(Instance.bad2gv); DegrS1VCells = length(Instance.degr2gv); 
-GoodS1VCells = NumS1Cells - (BadS1VCells + DegrS1VCells); 
-BadS2VCells = length(Instance.bad3gv); DegrS2VCells = length(Instance.degr3gv); 
-GoodS2VCells = NumS2Cells - (BadS2VCells + DegrS2VCells);
-BadS3VCells = length(Instance.badS3v); DegrS3VCells = length(Instance.degrS3v); 
-GoodS3VCells = NumS3Cells - (BadS3VCells + DegrS3VCells); 
+BadL1S1 = length(Instance.bads1); DegrL1S1 = length(Instance.degrs1);  
+BadL1S2 = length(Instance.bads2); DegrL1S2 = length(Instance.degrs2); 
+BadL1S3 = length(Instance.bads3); DegrL1S3 = length(Instance.degrs3); 
 
-BadS1MCells = length(Instance.bad2gm); DegrS1MCells = length(Instance.degr2gm); 
-GoodS1MCells = NumS1Cells - (BadS1MCells + DegrS1MCells);
-BadS2MCells = length(Instance.bad3gm); DegrS2MCells = length(Instance.degr3gm); 
-GoodS2MCells = NumS2Cells - (BadS2MCells + DegrS2MCells);
-BadS3MCells = length(Instance.badS3m); DegrS3MCells = length(Instance.degrS3m); 
-GoodS3MCells = NumS3Cells - (BadS3MCells + DegrS3MCells);  
+GoodL1S1 = NumL1S1 - (BadL1S1 + DegrL1S1);
+GoodL1S2 = NumL1S2 - (BadL1S2 + DegrL1S2);
+GoodL1S3 = NumL1S3 - (BadL1S3 + DegrL1S3);
 
-BadS1DCells = length(Instance.bad2gd); DegrS1DCells = length(Instance.degr2gd); 
-GoodS1DCells = NumS1Cells - (BadS1DCells + DegrS1DCells);
-BadS2DCells = length(Instance.bad3gd); DegrS2DCells = length(Instance.degr3gd); 
-GoodS2DCells = NumS2Cells - (BadS2DCells + DegrS2DCells);
-BadS3DCells = length(Instance.badS3d); DegrS3DCells = length(Instance.degrS3d); 
-GoodS3DCells = NumS3Cells - (BadS3DCells + DegrS3DCells); 
- 
-StatusS1VCellsText =   " S1: " + BadS1VCells + "/" + DegrS1VCells + "/" + GoodS1VCells + " of "+ int(ServiceInstance.NumS1Cells);
-StatusS1MCellsText =   " S1: " + BadS1MCells + "/" + DegrS1MCells + "/" + GoodS1MCells + " of "+ int(ServiceInstance.NumS1Cells);
-StatusS1DCellsText =   " S1: " + BadS1DCells + "/" + DegrS1DCells + "/" + GoodS1DCells + " of "+ int(ServiceInstance.NumS1Cells); 
+StatusL1S1Text =   " S1: " + BadL1S1 + "/" + DegrL1S1 + "/" + GoodL1S1 + " of "+ NumL1S1;
+StatusL1S2Text =   " S2: " + BadL1S2 + "/" + DegrL1S2 + "/" + GoodL1S2 + " of "+ NumL1S2;
+StatusL1S3Text =   " S3: " + BadL1S3 + "/" + DegrL1S3 + "/" + GoodL1S3 + " of "+ NumL1S3;
 
-StatusS2VCellsText =   " S2: " + BadS2VCells + "/" + DegrS2VCells + "/" + GoodS2VCells + " of "+ int(ServiceInstance.NumS2Cells);
-StatusS2MCellsText =   " S2: " + BadS2MCells + "/" + DegrS2MCells + "/" + GoodS2MCells + " of "+ int(ServiceInstance.NumS2Cells);
-StatusS2DCellsText =   " S2: " + BadS2DCells + "/" + DegrS2DCells + "/" + GoodS2DCells + " of "+ int(ServiceInstance.NumS2Cells); 
-
-StatusS3VCellsText =   " S3: " + BadS3VCells + "/" + DegrS3VCells + "/" + GoodS3VCells + " of "+ int(ServiceInstance.NumS3Cells);
-StatusS3MCellsText =   " S3: " + BadS3MCells + "/" + DegrS3MCells + "/" + GoodS3MCells + " of "+ int(ServiceInstance.NumS3Cells);
-StatusS3DCellsText =   " S3: " + BadS3DCells + "/" + DegrS3DCells + "/" + GoodS3DCells + " of "+ int(ServiceInstance.NumS3Cells); 
-
-if (Instance.SiteS1Status = 5) { StatusS1Text = "DOWN " ; } else { 
-if (Instance.SiteS1Status = 3) { StatusS1Text = "DEGR " ; } else { StatusS1Text = "UP " ; }
+if (Instance.L3S1Status = 5) { StatusS1Text = "DOWN " ; } else { 
+if (Instance.L3S1Status = 3) { StatusS1Text = "DEGR " ; } else { StatusS1Text = "UP " ; }
 } 
-if (Instance.SiteS2Status = 5) { StatusS2Text = "DOWN " ; } else { 
-if (Instance.SiteS2Status = 3) { StatusS2Text = "DEGR " ; } else { StatusS2Text = "UP " ; }
+if (Instance.L3S2Status = 5) { StatusS2Text = "DOWN " ; } else { 
+if (Instance.L3S2Status = 3) { StatusS2Text = "DEGR " ; } else { StatusS2Text = "UP " ; }
 } 
-if (Instance.SiteS3Status = 5) { StatusS3Text = "DOWN " ; } else { 
-if (Instance.SiteS3Status = 3) { StatusS3Text = "DEGR " ; } else { StatusS3Text = "UP " ; }
+if (Instance.L3S3Status = 5) { StatusS3Text = "DOWN " ; } else { 
+if (Instance.L3S3Status = 3) { StatusS3Text = "DEGR " ; } else { StatusS3Text = "UP " ; }
 } 
 
 if (ServiceInstance.ServiceClassifier = 'S1only') {
-StatusVCellsText =  StatusS1VCellsText;
-StatusMCellsText =  StatusS1MCellsText;
-StatusDCellsText =  StatusS1DCellsText;
-StatusNetworksText = "S1:("+StatusS1Text+")";
+Status123Text = "S1:("+StatusS1Text+")";
 }
 
 if (ServiceInstance.ServiceClassifier = 'S2only') {
-StatusVCellsText =  StatusS2VCellsText;
-StatusMCellsText =  StatusS2MCellsText;
-StatusDCellsText =  StatusS2DCellsText;
-StatusNetworksText = "S2:("+StatusS2Text+")";
+Status123Text = "S2:("+StatusS2Text+")";
 }
 
 if (ServiceInstance.ServiceClassifier = 'S3only') {
-StatusVCellsText =  StatusS3VCellsText;
-StatusMCellsText =  StatusS3MCellsText;
-StatusDCellsText =  StatusS3DCellsText;
-StatusNetworksText = "S3:("+StatusS3Text+")";
+Status123Text = "S3:("+StatusS3Text+")";
 } 
 
 
 if (ServiceInstance.ServiceClassifier = 'S1S2') { 
-StatusVCellsText =  StatusS1VCellsText + " " + StatusS2VCellsText;
-StatusMCellsText =  StatusS1MCellsText + " " + StatusS2MCellsText;
-StatusDCellsText =  StatusS1DCellsText + " " + StatusS2DCellsText;
-StatusNetworksText = "S1:("+StatusS1Text+") S2:("+StatusS2Text+")";
+Status123Text = "S1:("+StatusS1Text+") S2:("+StatusS2Text+")";
 } 
 
 if (ServiceInstance.ServiceClassifier = 'S1S3') { 
-StatusVCellsText =  StatusS1VCellsText + " " + StatusS3VCellsText;
-StatusMCellsText =  StatusS1MCellsText + " " + StatusS3MCellsText; 
-StatusDCellsText =  StatusS1DCellsText + " " + StatusS3DCellsText; 
-StatusNetworksText = "S1:("+StatusS1Text+") S3:("+StatusS3Text+")";
+Status123Text = "S1:("+StatusS1Text+") S3:("+StatusS3Text+")";
 } 
 
 
 if (ServiceInstance.ServiceClassifier = 'S2S3') { 
-StatusVCellsText =  StatusS2VCellsText + " " + StatusS3VCellsText; 
-StatusMCellsText =  StatusS2MCellsText + " " + StatusS3MCellsText;
-StatusDCellsText =  StatusS2DCellsText + " " + StatusS3DCellsText; 
-StatusNetworksText = "S2:("+StatusS2Text+") S3:("+StatusS3Text+")";
+Status123Text = "S2:("+StatusS2Text+") S3:("+StatusS3Text+")";
 }
 
 if (ServiceInstance.ServiceClassifier = 'S1S2S3') { 
-StatusVCellsText =  StatusS1VCellsText + " " + StatusS2VCellsText + " " + StatusS3VCellsText; 
-StatusMCellsText =  StatusS1MCellsText + " " + StatusS2MCellsText + " " + StatusS3MCellsText; 
-StatusDCellsText =  StatusS1DCellsText + " " + StatusS2DCellsText + " " + StatusS3DCellsText; 
-StatusNetworksText = "S1:("+StatusS1Text+") S2:("+StatusS2Text+") S3:("+StatusS3Text+")";
+Status123Text = "S1:("+StatusS1Text+") S2:("+StatusS2Text+") S3:("+StatusS3Text+")";
 }
 
  
-if (Instance.L3S4Status = 5) { StatusEnvVText = "DOWN " ; } else { 
-if (Instance.L3S4Status = 3) { StatusEnvText = "DEGR "  ; } else { StatusEnvText = "UP " ; }
+if (Instance.L3S4Status = 5) { StatusS4Text = "DOWN " ; } else { 
+if (Instance.L3S4Status = 3) { StatusS4Text = "DEGR "  ; } else { StatusS4Text = "UP " ; }
 }
 
-if (Instance.SiteVStatus = 5) { StatusVText = "DOWN " + StatusVCellsText; } else { 
-if (Instance.SiteVStatus = 3) { StatusVText = "DEGR " + StatusVCellsText; } else { StatusVText = "UP " + StatusVCellsText; }
+if (Instance.L3S1Status = 5) { StatusS1Text = "DOWN " + StatusL1S1Text; } else { 
+if (Instance.L3S1Status = 3) { StatusS1Text = "DEGR " + StatusL1S1Text; } else { StatusS1Text = "UP " + StatusL1S1Text; }
 }
 
-if (Instance.SiteMStatus = 5) { StatusMText = "DOWN " + StatusMCellsText; } else { 
-if (Instance.SiteMStatus = 3) { StatusMText = "DEGR " + StatusMCellsText; } else { StatusMText = "UP " + StatusMCellsText; }
+if (Instance.L3S2Status = 5) { StatusS2Text = "DOWN " + StatusL1S2Text; } else { 
+if (Instance.L3S2Status = 3) { StatusS2Text = "DEGR " + StatusL1S2Text; } else { StatusS2Text = "UP " + StatusL1S2Text; }
 }
 
-if (Instance.SiteDStatus = 5) { StatusDText = "DOWN " + StatusDCellsText; } else { 
-if (Instance.SiteDStatus = 3) { StatusDText = "DEGR " + StatusDCellsText; } else { StatusDText = "UP " + StatusDCellsText; }
-} 
+if (Instance.L3S3Status = 5) { StatusS3Text = "DOWN " + StatusL1S3Text; } else { 
+if (Instance.L3S3Status = 3) { StatusS1Text = "DEGR " + StatusL1S3Text; } else { StatusS3Text = "UP " + StatusL1S3Text; }
+}
 
 
-StatusText = "SITE : " + ServiceInstance.ServiceClassifier + " : " + RExtract(ServiceInstance.ServiceInstanceName,'(\w+)_SITA') + " Env(" + StatusEnvText + ") Voice(" + StatusVText + ") Data(" + StatusDText + ") Messaging(" + StatusMText + ") " + StatusNetworksText;
+StatusText = "L3: " + ServiceInstance.ServiceClassifier + " : " + RExtract(ServiceInstance.ServiceInstanceName,'(\w+)_L3O') + " S4(" + StatusS4Text + ") S1(" + StatusS1Text + ") S2(" + StatusS2Text + ") S3(" + StatusS3Text + ") " + Status123Text;
   
 
 }
@@ -190,9 +148,9 @@ StatusText = "SITE : " + ServiceInstance.ServiceClassifier + " : " + RExtract(Se
 function generate_servicetext_for_l3_serviceevent ( Instance, ServiceText) {
  startstmilli = JavaCall("java.lang.System",null,"currentTimeMillis",null);
  
-L3S1Status = Instance.SiteS1Status;
-L3S2Status = Instance.SiteS2Status;
-L3S3Status = Instance.SiteS3Status;
+L3S1Status = Instance.L3S1Status;
+L3S2Status = Instance.L3S2Status;
+L3S3Status = Instance.L3S3Status;
 
 if ((L3S1Status = 5) AND (L3S2Status = 5) AND (L3S3Status = 5)) { ServiceText = "ALL SERVICES DOWN"; }
 if ((L3S1Status = 5) AND (L3S2Status = 5) AND (L3S3Status = 3)) { ServiceText = "S1 and S2 SERVICES DOWN, S3 SERVICES REDUCED"; }

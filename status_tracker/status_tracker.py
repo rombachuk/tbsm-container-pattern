@@ -46,11 +46,9 @@ def netcoolbuildupdate(contentparts):
     pool = contentparts[49]
     region = contentparts[50]
     vendor = contentparts[51]
-    row = "update "+ table + " set RAD_SeenByImpact=0,Summary='" + summary + "',Service='" + service + "',ElementType = 'SITE', VFService = '" + sitetype + \ 
-          "',TechDomain3 = '" + access + "',TechDomain4 = '" + geolocation + "',TechDomain5 = '" + geoarea + \
-          "',ElementName1 = '" + vendor + "',ElementName2 = '" + pool + "',ElementName3 = '" + controller + \
-          "',Location = '" + location + "',VFElementName = '" + location + "',Parent = '"  + region + "'" + \
-    " where Class = 12000 and RAD_ServiceName ='"+location+"_SITA'"
+    row = "update "+ table + " set RAD_SeenByImpact=0,Summary='" + summary + "',Service='" + service + \
+          "',Location = '" + location + "'" + \
+    " where Class = 12000 and RAD_ServiceName ='"+location+"_L3O'"
     return row
 
 def netcoolwrite(exe,db,user,password,table,contentparts):
@@ -108,6 +106,7 @@ def addRow(servicekey,epoch,content):
 def process_config():
    maxthreads = 10
    trackedfile = 'tracked.log'
+   trackedline = 'L3_STATUS_LINE'
    logfile = 'log.log'
    maxwait = 500
    db2exe = 'db2'
@@ -165,6 +164,7 @@ if __name__ == "__main__":
  else:
   sys.exit()
  threadpool,trackedf,trackedl,logf,maxwait,dbexe,db,dbuser,dbpass,ncoexe,objsdb,objsuser,objspass,eindex = process_config()
+ print(str(trackedf))
  input_tail = subprocess.Popen(['tail','-n','0','-F',trackedf],\
     stdout=subprocess.PIPE,stderr=subprocess.PIPE)
  input_poll = select.poll()
@@ -180,6 +180,7 @@ if __name__ == "__main__":
 # non-blocking wait on record sent to input file (tail -F)
      if input_poll.poll(1):
         inputline = input_tail.stdout.readline()
+        print(str(inputline))
         if trackedl in inputline:
           lineparts = inputline.split("|")
           content = ''
@@ -188,12 +189,13 @@ if __name__ == "__main__":
             content = content + lineparts[p] + '|'
            else:
 	    content = content + lineparts[p]
-          #print(str(content))
+          print(str(content))
           addRow(lineparts[1],lineparts[int(eindex)],content)
      td = datetime.datetime.utcnow()-datetime.datetime(1970,1,1)
      now_epoch = (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6) / 10**6 
      expiredServices = findExpired(now_epoch,maxwait)
      for x in expiredServices:
+       print(str(x))
        while threading.activeCount() >= threadpool:
          time.sleep(1)
          print("Waiting for thread availability") 

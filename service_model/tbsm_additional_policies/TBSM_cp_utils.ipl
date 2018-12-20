@@ -68,7 +68,7 @@ function object_to_string(iobjects,ostring) {
 i = 0;
 ostring = '';
 while (i < length(iobjects)) {
- astring = ''+ iobjects[i].ID + '|' +iobjects[i].CELL+'';
+ astring = ''+ iobjects[i].L2 + '|' +iobjects[i].L1+'';
 i=i+1;
 if (i < length(iobjects)) {
  ostring = ostring + astring + ',';
@@ -99,13 +99,13 @@ Now = getdate(); // Now is held in Unix seconds since 1-jan-1970
 if (Now >= ServiceInstance.ServiceCountsExpiry) {
 ServiceSource = "TBSMDatabase"; 
 CountOnly = false;
-Query = "SELECT l2 as id,l1 FROM l1_s1  WHERE l3 = '" + Rextract(ServiceInstance.ServiceInstanceName,'(\w+)_L3O') + "'";
+Query = "SELECT l2 ,l1 FROM l1_s1  WHERE l3 = '" + Rextract(ServiceInstance.ServiceInstanceName,'(\w+)_L3O') + "'";
 result = DirectSQL(ServiceSource,Query,CountOnly); 
 object_to_string(result,ServiceInstance.svr_data);
-Query = "SELECT l2 as id,l1 FROM l1_s2  WHERE l3 = '" + Rextract(ServiceInstance.ServiceInstanceName,'(\w+)_L3O') + "'";
+Query = "SELECT l2 ,l1 FROM l1_s2  WHERE l3 = '" + Rextract(ServiceInstance.ServiceInstanceName,'(\w+)_L3O') + "'";
 result = DirectSQL(ServiceSource,Query,CountOnly); 
 object_to_string(result,ServiceInstance.esx_data);
-Query = "SELECT l2 as id,l1 FROM l1_s3  WHERE l3 = '" + Rextract(ServiceInstance.ServiceInstanceName,'(\w+)_L3O') + "'";
+Query = "SELECT l2 ,l1 FROM l1_s3  WHERE l3 = '" + Rextract(ServiceInstance.ServiceInstanceName,'(\w+)_L3O') + "'";
 result = DirectSQL(ServiceSource,Query,CountOnly); 
 object_to_string(result,ServiceInstance.net_data);
 }
@@ -240,7 +240,7 @@ Now = getdate(); // Now is held in Unix seconds since 1-jan-1970
 if (Now >= ServiceInstance.ServiceCountsExpiry) {
 
 ServiceSource = "TBSMDatabase"; 
-Query = "SELECT * FROM L3_COUNTS WHERE LOCATION = '" + Rextract(ServiceInstance.ServiceInstanceName,'(\w+)_L3O') + "'";
+Query = "SELECT * FROM L3_COUNTS WHERE L3 = '" + Rextract(ServiceInstance.ServiceInstanceName,'(\w+)_L3O') + "'";
  CountOnly = false; MyServices = DirectSQL(ServiceSource,Query,CountOnly); 
 ServiceCount = Num;
 if (ServiceCount != 1) {
@@ -250,7 +250,7 @@ log("SiteAllServices_OverallStatus DB Error : ServiceSiteCounts Update Find Serv
 }
 else {
  ServiceRow = MyServices[0];
- ServiceInstance.ServiceClassifier = ServiceRow.SiteType;
+ ServiceInstance.ServiceClassifier = ServiceRow.L3Type;
  ServiceInstance.NumL1 = ServiceRow.CountL1; 
  ServiceInstance.NumL1S1  = ServiceRow.CountL1S1; 
  ServiceInstance.NumL1S2  = ServiceRow.CountL1S2; 
@@ -258,8 +258,8 @@ else {
  ServiceInstance.NumL2  = ServiceRow.CountL2; 
 }
 
-Query2 = "SELECT access,priority,geo_location,geo_area,region," +
-         " FROM L3_INFO WHERE LOCATION = '" + Rextract(ServiceInstance.ServiceInstanceName,'(\w+)_L3O') + "'";
+Query2 = "SELECT access,priority,geo_location,geo_area,region" +
+         " FROM L3_INFO WHERE L3 = '" + Rextract(ServiceInstance.ServiceInstanceName,'(\w+)_L3O') + "'";
  CountOnly = false; MyServices2 = DirectSQL(ServiceSource,Query2,CountOnly); 
 ServiceCount2 = Num;
 if (ServiceCount2 != 1) {
@@ -278,5 +278,3 @@ else {
  ServiceInstance.ServiceCountsExpiry = Now + 86400; // Now = 1 day
 }
 }
- 
-
