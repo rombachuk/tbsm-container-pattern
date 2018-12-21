@@ -24,6 +24,6 @@
  EventContainer.LastOccurrence =  LatestLastOccurrence;
  EventContainer.FirstOccurrence = EarliestFirstOccurrence; 
  EventContainer.RAD_SeenByImpact = 1;  
-// log(EventContainer);
+ log(EventContainer);
 
    ReturnEvent(EventContainer);

@@ -18,7 +18,7 @@ NumAffL1 = InstanceNode.NumBadL1S1.Value+InstanceNode.NumBadL1S2.Value + Instanc
                 InstanceNode.NumDegrL1S1.Value+InstanceNode.NumDegrL1S2.Value + InstanceNode.NumDegrL1S3.Value + InstanceNode.NumDegrL1.Value; 
 NumAffL2 = InstanceNode.NumBadL2S1.Value + InstanceNode.NumBadL2S2.Value + InstanceNode.NumBadL2S3.Value + InstanceNode.NumBadL2.Value +
                 InstanceNode.NumDegrL2S1.Value+InstanceNode.NumDegrL2S2.Value + InstanceNode.NumDegrL2S3.Value + InstanceNode.NumDegrL2.Value; 
-NumAffL3 = InstanceNode.NumBadL3S4.Value + InstanceNode.NumDegrL3S4.Value + InstanceNode.Dummy.Value; 
+NumAffL3 = InstanceNode.NumBadL3S4.Value + InstanceNode.NumDegrL3S4.Value + InstanceNode.Dummy.Value ; 
 
 thisInstance.NumL1S1 = ServiceInstance.NumL1S1;
 thisInstance.NumL1S2 = ServiceInstance.NumL1S2;
@@ -70,16 +70,18 @@ else {
 }
 
 // log("DEPENDENTS:"+dependents);
-// log("INSTANCE:"+thisInstance);
-// log("SERVICES:"+thisInstance.L1S1Status+'/'+thisInstance.L1S2Status+'/'+thisInstance.L1S3Status+'/');
+log("INSTANCE:"+thisInstance);
+log("SERVICES:"+thisInstance.L3S1Status+'/'+thisInstance.L3S2Status+'/'+thisInstance.L3S3Status+'/');
 
-if ((thisInstance.L1S1Status = 5) AND (thisInstance.L1S2Status = 5) AND (thisInstance.L1S3Status = 5) ) 
+if ((thisInstance.L3S1Status = 5) AND (thisInstance.L3S2Status = 5) AND (thisInstance.L3S3Status = 5) ) 
 {NewStatus = 5; }
 else {
-   if ((thisInstance.L1S1Status >= 3) OR (thisInstance.L1S2Status >= 3) OR (thisInstance.L1S3Status >= 3) OR (thisInstance.L1S4Status >= 3)) 
+   if ((thisInstance.L3S1Status >= 3) OR (thisInstance.L3S2Status >= 3) OR (thisInstance.L3S3Status >= 3) OR (thisInstance.L3S4Status >= 3)) 
    {NewStatus = 3;}
    else { NewStatus = 0;  } 
    }
+
+log("NEWSTATUS:"+NewStatus);
  cp_statustext.generate_statustext_for_l3_serviceevent (ServiceInstance, thisInstance, SiteStatusText);
  cp_statustext.generate_servicetext_for_l3_serviceevent (thisInstance, SiteServiceText);
  cp_statustext.generate_allattributestext_for_l3_serviceevent (ServiceInstance, thisInstance, SiteStatusText, SiteServiceText, 

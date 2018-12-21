@@ -34,18 +34,10 @@ def db2write(exe,table,key,content):
     return
 
 
-def netcoolbuildupdate(contentparts):
-    summary = contentparts[39]
-    service = contentparts[40]
+def netcoolbuildupdate(table,contentparts):
+    summary = contentparts[16]
+    service = contentparts[17]
     location = contentparts[0]
-    sitetype = contentparts[1]
-    access = contentparts[45]
-    controller = contentparts[46]
-    geoarea = contentparts[47]
-    geolocation = contentparts[48]
-    pool = contentparts[49]
-    region = contentparts[50]
-    vendor = contentparts[51]
     row = "update "+ table + " set RAD_SeenByImpact=0,Summary='" + summary + "',Service='" + service + \
           "',Location = '" + location + "'" + \
     " where Class = 12000 and RAD_ServiceName ='"+location+"_L3O'"
@@ -55,7 +47,7 @@ def netcoolwrite(exe,db,user,password,table,contentparts):
     filename = datetime.datetime.now().strftime(basepath+"statustracker-%Y%m%d%H%M%S%f")
     fsql = open(filename+'.ncosql','w')
     fsh = open(filename+'.sh','w')
-    row = netcoolbuildupdate(contentparts) 
+    row = netcoolbuildupdate(table,contentparts) 
     fsql.write(row + '\n') 
     fsql.write("go" + '\n')
     fsql.flush()
@@ -160,11 +152,9 @@ basepath = ''
 if __name__ == "__main__":
  if len(sys.argv) == 2:
   basepath = sys.argv[1]
-  print basepath
  else:
   sys.exit()
  threadpool,trackedf,trackedl,logf,maxwait,dbexe,db,dbuser,dbpass,ncoexe,objsdb,objsuser,objspass,eindex = process_config()
- print(str(trackedf))
  input_tail = subprocess.Popen(['tail','-n','0','-F',trackedf],\
     stdout=subprocess.PIPE,stderr=subprocess.PIPE)
  input_poll = select.poll()
@@ -176,11 +166,9 @@ if __name__ == "__main__":
 # start the main forever loop
 #
  while True:
-
 # non-blocking wait on record sent to input file (tail -F)
      if input_poll.poll(1):
         inputline = input_tail.stdout.readline()
-        print(str(inputline))
         if trackedl in inputline:
           lineparts = inputline.split("|")
           content = ''
@@ -189,17 +177,14 @@ if __name__ == "__main__":
             content = content + lineparts[p] + '|'
            else:
 	    content = content + lineparts[p]
-          print(str(content))
           addRow(lineparts[1],lineparts[int(eindex)],content)
      td = datetime.datetime.utcnow()-datetime.datetime(1970,1,1)
      now_epoch = (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6) / 10**6 
      expiredServices = findExpired(now_epoch,maxwait)
      for x in expiredServices:
-       print(str(x))
        while threading.activeCount() >= threadpool:
          time.sleep(1)
-         print("Waiting for thread availability") 
-       th.append(threading.Thread(target=statuswrite,args=(x['content'],dbexe,ncoexe,objsdb,objsuser,objspass,objsupdate)))
+       th.append(threading.Thread(target=statuswrite,args=(x['content'],dbexe,ncoexe,objsdb,objsuser,objspass)))
        index = len(th)-1
        th[index].start()
      inputline = ""
