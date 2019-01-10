@@ -1,0 +1,13 @@
+set serveroutput on 
+DB20000I  The SET SERVEROUTPUT command completed successfully.
+
+call populate_l3_info ()  
+
+  Return Status = 0
+
+Num L3 = 10
+Count = 10
+
+commit work 
+DB20000I  The SQL command completed successfully.
+

@@ -1,5 +1,40 @@
-USE_SHARED_SCOPE;
+USE_SHARED_SCOPE; 
 
+// workaround tbsmshell commands until TBSMShell is properly available 
+
+function clearTBSMShellFile(filename) {
+ Command = "touch"; 
+ Args = {filename};  
+ JRExecAction(Command, Args, False, 5); 
+
+ Command = "truncate";  
+ Args = {"--size","0",filename};  
+ JRExecAction(Command, Args, False, 5);
+
+Command = "pwd"; 
+log(Command); 
+ Args = {""};  
+ JRExecAction(Command, Args, False, 5); 
+ Log("ExecOutput: "+ExecOutput); Log("ExitCode: "+ExitCode); 
+
+} 
+ 
+function addToTBSMShellFile(istring,filename) {
+ Command = "./tbsmshellfilebuilder.sh"; 
+ Args = {istring+';',filename};
+ 
+JRExecAction(Command, Args, False, 60);
+} 
+
+function runTBSMShellFile(filename) {
+ Command = "./tbsmshellfilerunner.sh"; 
+Args = {filename};
+JRExecAction(Command, Args, False, 60);
+ Log("ExecOutput: "+ExecOutput); Log("ExitCode: "+ExitCode); 
+} 
+
+// main code
+ 
 function TBSM_Reprocess_Events(NetcoolDB,filterlist) {
   rpQuery = "update alerts.status set RAD_ServiceName = '', RAD_FilterIDList = '', RAD_RawInputLastValue = 6 where "+filterlist;
   log("reprocessing for "+filterlist);
@@ -14,7 +49,9 @@ function TBSM_Rule_Delete (tbsmDB,NetcoolDB,thisRule) {
    if (length(rulestatus) = 1) {
     del_string = String('deleteAttributeFromTemplate ("' + thisRule.templates[i].name + '","' + thisRule.name + '")'); 
     log(del_string);
-    result = RemoteTBSMShell (del_string);
+    clearTBSMShellFile('/tmp/ruledelete');
+    addToTBSMShellFile(del_string,'/tmp/ruledelete');  
+    runTBSMShellFile('/tmp/ruledelete');
    }
    i=i+1;
  }
@@ -28,21 +65,28 @@ function TBSM_Rule_Add (tbsmDB,NetcoolDB,thisRule) {
  i = 0;
  lentemplate = length(thisRule.templates);
  while (i < length(thisRule.templates)) {
+  
   rulestatus = DirectSQL(tbsmDB,"select statename from tbsmbase.EVENTMAPPINGFILTERVIEW where statename = '" + thisRule.name + "' and servicetypename = '"+thisRule.templates[i].name+"' group by statename",'false');
   if (length(rulestatus) = 0) {
+   clearTBSMShellFile('/tmp/ruleadd');
    string1 = String('addNewRawAttribute("' + thisRule.templates[i].name + '","' + thisRule.name + '",' +
                     ' new String[] { ' + classList + ' },new String[] { "' + thisRule.identifier + '" },0,"ObjectServer")');
+   addToTBSMShellFile(string1,'/tmp/ruleadd'); 
    string2 = String( 'addRawAttributeThresholdSet("' + thisRule.templates[i].name + '","' + thisRule.name + '","' + thisRule.impact + '",' +
                       'null, new String[] { ' + fieldList + ' },new String[] { ' + operatorList + ' },new String[] { ' + conditionList + ' },0)');
+   addToTBSMShellFile(string2,'/tmp/ruleadd');  
    string3 = String('addUserPreferencesForTemplate ("' + thisRule.templates[i].name + '","' + thisRule.name + '","")');
+   addToTBSMShellFile(string3,'/tmp/ruleadd'); 
    newrule_string = string1 + ";\n" + string2 + ";\n" + string3 + ";\n";
    log(newrule_string);
-   result1 = RemoteTBSMShell(newrule_string);
+   runTBSMShellFile('/tmp/ruleadd');
    thisAutopop = thisRule.templates[i].autopop;
    thisExclude = thisAutopop[0].exclude;
    format_Exclude(thisExclude,exclude);
+   clearTBSMShellFile('/tmp/ruleautopopadd'); 
    createap_string = String('createAutoPopulationRule("' + thisAutopop[0].template + '","' + thisAutopop[0].display_naming + '","' + thisAutopop[0].service_naming +
                      '","Standard",true,"ADD","' + exclude + '","' + thisRule.name + '","ap_' + thisRule.name + '",' + 'null,null,null,null,null,null,"","",null,null,"RawAttributeFeed")') ;
+   addToTBSMShellFile(createap_string,'/tmp/ruleautopopadd');
    ap_string = createap_string + ";\n";
    k = 1;
    while (k < length(thisAutopop)) {
@@ -50,11 +94,12 @@ function TBSM_Rule_Add (tbsmDB,NetcoolDB,thisRule) {
     format_Exclude(thisExclude,exclude);
     addap_string =  String('addToAutoPopulationRule("' + thisAutopop[0].template + '",null,"' + thisAutopop[k].template + '","' + thisAutopop[k].service_naming + '","' + thisAutopop[k].display_naming +
                     '","Standard",true,"ADD","' + exclude + '","ap_' + thisRule.name + '",' + 'null,null,null,null,null,null,"","",null,null)') ;
+    addToTBSMShellFile(addap_string,'/tmp/ruleautopopadd'); 
     ap_string = ap_string + addap_string + ";\n";
     k=k+1;
    }
   log(ap_string);
-  result2 = RemoteTBSMShell(ap_string); 
+  runTBSMShellFile('/tmp/ruleautopopadd');
   }
  i=i+1;
  }
@@ -110,4 +155,3 @@ function format_Filter(conditions,fstring) {
   i=i+1;
  }
 }
-

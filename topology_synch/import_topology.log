@@ -1,0 +1,69 @@
+import from ./content/l1_s1.lookup of del modified by coldel, restartcount 0 insert_update into l1_s1 
+SQL3109N  The utility is beginning to load data from file 
+"./content/l1_s1.lookup".
+
+SQL3110N  The utility has completed processing.  "106" rows were read from the 
+input file.
+
+SQL3221W  ...Begin COMMIT WORK. Input Record Count = "106".
+
+SQL3222W  ...COMMIT of any database changes was successful.
+
+SQL3149N  "106" rows were processed from the input file.  "15" rows were 
+successfully inserted into the table.  "0" rows were rejected.
+
+
+Number of rows read         = 106
+Number of rows skipped      = 0
+Number of rows inserted     = 15
+Number of rows updated      = 91
+Number of rows rejected     = 0
+Number of rows committed    = 106
+
+
+import from ./content/l1_s2.lookup of del modified by coldel, restartcount 0 insert_update into l1_s2 
+SQL3109N  The utility is beginning to load data from file 
+"./content/l1_s2.lookup".
+
+SQL3110N  The utility has completed processing.  "42" rows were read from the 
+input file.
+
+SQL3221W  ...Begin COMMIT WORK. Input Record Count = "42".
+
+SQL3222W  ...COMMIT of any database changes was successful.
+
+SQL3149N  "42" rows were processed from the input file.  "6" rows were 
+successfully inserted into the table.  "0" rows were rejected.
+
+
+Number of rows read         = 42
+Number of rows skipped      = 0
+Number of rows inserted     = 6
+Number of rows updated      = 36
+Number of rows rejected     = 0
+Number of rows committed    = 42
+
+
+import from ./content/l1_s3.lookup of del modified by coldel, restartcount 0 insert_update into l1_s3 
+SQL3109N  The utility is beginning to load data from file 
+"./content/l1_s3.lookup".
+
+SQL3110N  The utility has completed processing.  "63" rows were read from the 
+input file.
+
+SQL3221W  ...Begin COMMIT WORK. Input Record Count = "63".
+
+SQL3222W  ...COMMIT of any database changes was successful.
+
+SQL3149N  "63" rows were processed from the input file.  "9" rows were 
+successfully inserted into the table.  "0" rows were rejected.
+
+
+Number of rows read         = 63
+Number of rows skipped      = 0
+Number of rows inserted     = 9
+Number of rows updated      = 54
+Number of rows rejected     = 0
+Number of rows committed    = 63
+
+

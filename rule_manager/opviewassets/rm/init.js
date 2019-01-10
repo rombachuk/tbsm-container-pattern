@@ -500,7 +500,7 @@ function addRuleLike() {
      var likerule = getSelectedItem('listRulesGrid','name');
      var likeruletext = 'AddRule like ['+likerule+']';
      var likeruleparts = likerule.split('_');
-     var likeruleprefix = likeruleparts[0]+'_'+likeruleparts[1]+'_';
+     var likeruleprefix = likeruleparts[0]+'_'+likeruleparts[1]+'_'+likeruleparts[2]+'_';
      var condition = getSelectedItem('listRulesGrid','conditionsDisplay');
      var conditionparts = condition.split(' ');
      var conditionprefix = conditionparts[0]+' '+conditionparts[1]+ ' \'.*'; 

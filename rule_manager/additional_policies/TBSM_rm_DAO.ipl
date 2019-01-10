@@ -58,6 +58,7 @@ function DAO_Rules_Modify(RulesDB,parameters)  {
 
 function DAO_Rules_Add_Like(RulesDB,parameters)  {
      tQuery = "select name from rulemgr_rule where name = '" + parameters.name + "' group by name";
+     log(tQuery);
      MyRule = DirectSQL(RulesDB,tQuery,'false');
      if (Num = 1) {
          log("Cannot add rule [" + parameters.newrule + "] as it already exists ");
@@ -67,6 +68,7 @@ function DAO_Rules_Add_Like(RulesDB,parameters)  {
        "'as key2,'"+parameters.key3+"' as key3,'"+parameters.newid+"' as id,"+
        "replace(replace(replace(replace(jsondoc,'"+parameters.likerule+"','"+parameters.newrule+"'),'"+parameters.likeclassifier+"','"+parameters.newclassifier+
        "'),'\""+parameters.likeimpact+"\"','\""+parameters.newimpact+"\"'),'\""+parameters.likeid+"\"','\""+parameters.newid+"\"') as jsondoc from rulemgr_rule where name='"+parameters.likerule+"'";
+       log(newruleq);
        DirectSQL(RulesDB,newruleq,'false');
   }
 }

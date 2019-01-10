@@ -35,13 +35,8 @@ add specific eventfield conversion rules here eg
 
 RulesDB = "TBSMDatabase";
 omniDB = "ObjectServer_DS";
-/* 
-assign key to incoming parameters if using event rule - otherwise use defaults
-eg for inbound parameters from selected event, use @field eg
-key1 = @Location;
-key2 = @AlertGroup;
-key3 = @Node;
 
+/*
 alternately set default values here with strings, best for NOI_WebGui which does 
 support right mouse tools easily
 */
