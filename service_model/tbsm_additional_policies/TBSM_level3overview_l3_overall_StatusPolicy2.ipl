@@ -33,15 +33,15 @@ else {
 }
 
 
-if (thisInstance.NumL1S1 = 0) { thisInstance.L3S1Status = 0; }
+if (thisInstance.NumL1S1 = 0) { thisInstance.L1S1Status = 0; }
 else {
  if (length(thisInstance.badl1s1) = 0) {
-   if (length(thisInstance.degrl1s1) > 0) { thisInstance.L3S1Status = 3; }
-   else { thisInstance.L3S1Status = 0; }
+   if (length(thisInstance.degrl1s1) > 0) { thisInstance.L1S1Status = 3; }
+   else { thisInstance.L1S1Status = 0; }
  }
  else {
-   if (length(thisInstance.badl1s1) = thisInstance.NumL1S1) { thisInstance.L3S1Status = 5; }
-   else { thisInstance.L3S1Status = 3; }
+   if (length(thisInstance.badl1s1) = thisInstance.NumL1S1) { thisInstance.L1S1Status = 5; }
+   else { thisInstance.L1S1Status = 3; }
  }
 }
 
@@ -70,8 +70,8 @@ else {
 }
 
 // log("DEPENDENTS:"+dependents);
-log("INSTANCE:"+thisInstance);
-log("SERVICES:"+thisInstance.L3S1Status+'/'+thisInstance.L3S2Status+'/'+thisInstance.L3S3Status+'/');
+// log("INSTANCE:"+thisInstance);
+// log("SERVICES:"+thisInstance.L3S1Status+'/'+thisInstance.L3S2Status+'/'+thisInstance.L3S3Status+'/');
 
 if ((thisInstance.L3S1Status = 5) AND (thisInstance.L3S2Status = 5) AND (thisInstance.L3S3Status = 5) ) 
 {NewStatus = 5; }
@@ -81,7 +81,7 @@ else {
    else { NewStatus = 0;  } 
    }
 
-log("NEWSTATUS:"+NewStatus);
+// log("NEWSTATUS:"+NewStatus);
  cp_statustext.generate_statustext_for_l3_serviceevent (ServiceInstance, thisInstance, SiteStatusText);
  cp_statustext.generate_servicetext_for_l3_serviceevent (thisInstance, SiteServiceText);
  cp_statustext.generate_allattributestext_for_l3_serviceevent (ServiceInstance, thisInstance, SiteStatusText, SiteServiceText, 

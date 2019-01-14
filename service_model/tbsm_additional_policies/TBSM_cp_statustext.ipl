@@ -135,7 +135,7 @@ if (Instance.L3S2Status = 3) { StatusS2Text = "DEGR " + StatusL1S2Text; } else {
 }
 
 if (Instance.L3S3Status = 5) { StatusS3Text = "DOWN " + StatusL1S3Text; } else { 
-if (Instance.L3S3Status = 3) { StatusS1Text = "DEGR " + StatusL1S3Text; } else { StatusS3Text = "UP " + StatusL1S3Text; }
+if (Instance.L3S3Status = 3) { StatusS3Text = "DEGR " + StatusL1S3Text; } else { StatusS3Text = "UP " + StatusL1S3Text; }
 }
 
 
