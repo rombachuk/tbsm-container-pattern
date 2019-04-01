@@ -6,9 +6,9 @@ L3 VARCHAR(64) NOT NULL,
 L3TYPE VARCHAR(64), 
 REGION VARCHAR(64), 
 L4 VARCHAR(64), 
-OPSTATE_S1 VARCHAR(64), 
-OPSTATE_S2 VARCHAR(64), 
-OPSTATE_S3 VARCHAR(64), 
+OPSTATE_D1 VARCHAR(64), 
+OPSTATE_D2 VARCHAR(64), 
+OPSTATE_D3 VARCHAR(64), 
 GEO_LOCATION VARCHAR(64), 
 GEO_AREA VARCHAR(64), 
 GEO_COORDINATES VARCHAR(64), 
@@ -28,9 +28,9 @@ DECLARE v_L3 VARCHAR(64) ;
 DECLARE v_L3TYPE VARCHAR(64); 
 DECLARE v_REGION VARCHAR(64); 
 DECLARE v_L4 VARCHAR(64); 
-DECLARE v_OPSTATE_S1 VARCHAR(64); 
-DECLARE v_OPSTATE_S2 VARCHAR(64); 
-DECLARE v_OPSTATE_S3 VARCHAR(64); 
+DECLARE v_OPSTATE_D1 VARCHAR(64); 
+DECLARE v_OPSTATE_D2 VARCHAR(64); 
+DECLARE v_OPSTATE_D3 VARCHAR(64); 
 DECLARE v_GEO_LOCATION VARCHAR(64); 
 DECLARE v_GEO_AREA VARCHAR(64); 
 DECLARE v_GEO_COORDINATES VARCHAR(64); 
@@ -40,40 +40,40 @@ DECLARE v_BUSINESS_QUALIFIER1 VARCHAR(64);
 DECLARE v_BUSINESS_QUALIFIER2 VARCHAR(64);
 DECLARE v_BUSINESS_QUALIFIER3 VARCHAR(64);
 DECLARE v_BUSINESS_QUALIFIER4 VARCHAR(64);
-DECLARE v_cnts1l1 INTEGER ;
-DECLARE v_cnts2l1 INTEGER ;
-DECLARE v_cnts3l1 INTEGER ;
+DECLARE v_cntd1l1 INTEGER ;
+DECLARE v_cntd2l1 INTEGER ;
+DECLARE v_cntd3l1 INTEGER ;
 DECLARE v_count,v_numl3,v_commitcount INTEGER DEFAULT 0;
 
 DECLARE c1 CURSOR WITH HOLD FOR 
   SELECT l3 from 
-  (SELECT  l3 from  l1_s2 group by l3
-   UNION SELECT  l3 from  l1_s3 group by l3
-   UNION SELECT  l3 from  l1_s1 group by l3); 
+  (SELECT  l3 from  d2_l1 group by l3
+   UNION SELECT  l3 from  d3_l1 group by l3
+   UNION SELECT  l3 from  d1_l1 group by l3); 
 
 
 SELECT COUNT(*) INTO v_numl3 from  
   (SELECT l3 from 
-  (SELECT  l3 from  l1_s2 group by l3
-   UNION SELECT  l3 from  l1_s3 group by l3
-   UNION SELECT  l3 from  l1_s1 group by l3)) ;
+  (SELECT  l3 from  d2_l1 group by l3
+   UNION SELECT  l3 from  d3_l1 group by l3
+   UNION SELECT  l3 from  d1_l1 group by l3)) ;
 
 
  call DBMS_OUTPUT.PUT_LINE('Num L3 = ' || v_numl3);
 OPEN c1;
 WHILE v_count < v_numl3
 DO
- SET v_cnts1l1 = 0;
- SET v_cnts2l1 = 0;
- SET v_cnts3l1 = 0;
+ SET v_cntd1l1 = 0;
+ SET v_cntd2l1 = 0;
+ SET v_cntd3l1 = 0;
 
  SET v_L3 = ''   ; 
  SET v_L3TYPE = ''    ; 
  SET v_REGION = ''    ; 
  SET v_L4 = ''    ; 
- SET v_OPSTATE_S1 = ''    ; 
- SET v_OPSTATE_S2 = ''    ; 
- SET v_OPSTATE_S3 = ''    ; 
+ SET v_OPSTATE_D1 = ''    ; 
+ SET v_OPSTATE_D2 = ''    ; 
+ SET v_OPSTATE_D3 = ''    ; 
  SET v_GEO_LOCATION = ''    ; 
  SET v_GEO_AREA = ''    ; 
  SET v_GEO_COORDINATES = ''    ; 
@@ -86,66 +86,66 @@ DO
 
  FETCH c1 INTO v_L3;
 
- SELECT COUNT(*) INTO v_cnts1l1 FROM (select l1 from l1_s1 WHERE l3 = v_l3 group by l1); 
- SELECT COUNT(*) INTO v_cnts2l1 FROM (select l1 from l1_s2 WHERE l3 = v_l3 group by l1); 
- SELECT COUNT(*) INTO v_cnts3l1 FROM (select l1 from l1_s3 WHERE l3 = v_l3 group by l1); 
+ SELECT COUNT(*) INTO v_cntd1l1 FROM (select l1 from d1_l1 WHERE l3 = v_l3 group by l1); 
+ SELECT COUNT(*) INTO v_cntd2l1 FROM (select l1 from d2_l1 WHERE l3 = v_l3 group by l1); 
+ SELECT COUNT(*) INTO v_cntd3l1 FROM (select l1 from d3_l1 WHERE l3 = v_l3 group by l1); 
 
- IF ((v_cnts1l1 > 0) and (v_cnts2l1 > 0) and (v_cnts3l1 > 0)) THEN SET v_l3type = 'S1S2S3'; END IF;
- IF ((v_cnts1l1 > 0) and (v_cnts2l1 > 0) and (v_cnts3l1 = 0)) THEN SET v_l3type = 'S1S2'; END IF;
- IF ((v_cnts1l1 > 0) and (v_cnts2l1 = 0) and (v_cnts3l1 > 0)) THEN SET v_l3type = 'S1S3'; END IF;
- IF ((v_cnts1l1 = 0) and (v_cnts2l1 > 0) and (v_cnts3l1 > 0)) THEN SET v_l3type = 'S2S3'; END IF;
- IF ((v_cnts1l1 > 0) and (v_cnts2l1 = 0) and (v_cnts3l1 = 0)) THEN SET v_l3type = 'S1only'; END IF;
- IF ((v_cnts1l1 = 0) and (v_cnts2l1 > 0) and (v_cnts3l1 = 0)) THEN SET v_l3type = 'S2only'; END IF;
- IF ((v_cnts1l1 = 0) and (v_cnts2l1 = 0) and (v_cnts3l1 > 0)) THEN SET v_l3type = 'S3only'; END IF;
+ IF ((v_cntd1l1 > 0) and (v_cntd2l1 > 0) and (v_cntd3l1 > 0)) THEN SET v_l3type = 'D1D2D3'; END IF;
+ IF ((v_cntd1l1 > 0) and (v_cntd2l1 > 0) and (v_cntd3l1 = 0)) THEN SET v_l3type = 'D1D2'; END IF;
+ IF ((v_cntd1l1 > 0) and (v_cntd2l1 = 0) and (v_cntd3l1 > 0)) THEN SET v_l3type = 'D1D3'; END IF;
+ IF ((v_cntd1l1 = 0) and (v_cntd2l1 > 0) and (v_cntd3l1 > 0)) THEN SET v_l3type = 'D2D3'; END IF;
+ IF ((v_cntd1l1 > 0) and (v_cntd2l1 = 0) and (v_cntd3l1 = 0)) THEN SET v_l3type = 'D1only'; END IF;
+ IF ((v_cntd1l1 = 0) and (v_cntd2l1 > 0) and (v_cntd3l1 = 0)) THEN SET v_l3type = 'D2only'; END IF;
+ IF ((v_cntd1l1 = 0) and (v_cntd2l1 = 0) and (v_cntd3l1 > 0)) THEN SET v_l3type = 'D3only'; END IF;
 
- IF (v_cnts1l1 > 0) THEN
+ IF (v_cntd1l1 > 0) THEN
  SELECT OPSTATUS
- INTO   v_OPSTATE_S1 
- FROM l1_s1 WHERE L3 = v_L3 
+ INTO   v_OPSTATE_D1 
+ FROM d1_l1 WHERE L3 = v_L3 
  FETCH FIRST 1 ROWS ONLY;
  END IF;
 
- IF (v_cnts2l1 > 0) THEN
+ IF (v_cntd2l1 > 0) THEN
  SELECT OPSTATUS
- INTO   v_OPSTATE_S2 
- FROM l1_s2 WHERE L3 = v_L3 
+ INTO   v_OPSTATE_D2 
+ FROM d2_l1 WHERE L3 = v_L3 
  FETCH FIRST 1 ROWS ONLY;
  END IF;
 
- IF (v_cnts3l1 > 0) THEN
+ IF (v_cntd3l1 > 0) THEN
  SELECT OPSTATUS
- INTO   v_OPSTATE_S3 
- FROM l1_s3 WHERE L3 = v_L3 
+ INTO   v_OPSTATE_D3 
+ FROM d3_l1 WHERE L3 = v_L3 
  FETCH FIRST 1 ROWS ONLY;
  END IF;
 
 
- IF (v_cnts1l1 > 0) THEN
+ IF (v_cntd1l1 > 0) THEN
  SELECT REGION,GEO_LOCATION,GEO_AREA,GEO_COORDINATES,
         ACCESS,PRIORITY,
         QUAL1,QUAL2,QUAL3,QUAL4
  INTO   v_REGION,v_GEO_LOCATION,v_GEO_AREA,v_GEO_COORDINATES,
         v_ACCESS, v_PRIORITY, 
         v_BUSINESS_QUALIFIER1, v_BUSINESS_QUALIFIER2, v_BUSINESS_QUALIFIER3, v_BUSINESS_QUALIFIER4
- FROM l1_s1 WHERE L3 = v_L3 
+ FROM d1_l1 WHERE L3 = v_L3 
  FETCH FIRST 1 ROWS ONLY;
- ELSEIF (v_cnts2l1 > 0) THEN
+ ELSEIF (v_cntd2l1 > 0) THEN
  SELECT REGION,GEO_LOCATION,GEO_AREA,GEO_COORDINATES,
         ACCESS,PRIORITY,
         QUAL1,QUAL2,QUAL3,QUAL4
  INTO   v_REGION,v_GEO_LOCATION,v_GEO_AREA,v_GEO_COORDINATES,
         v_ACCESS, v_PRIORITY, 
         v_BUSINESS_QUALIFIER1, v_BUSINESS_QUALIFIER2, v_BUSINESS_QUALIFIER3, v_BUSINESS_QUALIFIER4
- FROM l1_s2 WHERE L3 = v_L3 
+ FROM d2_l1 WHERE L3 = v_L3 
  FETCH FIRST 1 ROWS ONLY;
- ELSEIF (v_cnts3l1 > 0) THEN
+ ELSEIF (v_cntd3l1 > 0) THEN
  SELECT REGION,GEO_LOCATION,GEO_AREA,GEO_COORDINATES,
         ACCESS,PRIORITY,
         QUAL1,QUAL2,QUAL3,QUAL4
  INTO   v_REGION,v_GEO_LOCATION,v_GEO_AREA,v_GEO_COORDINATES,
         v_ACCESS, v_PRIORITY, 
         v_BUSINESS_QUALIFIER1, v_BUSINESS_QUALIFIER2, v_BUSINESS_QUALIFIER3, v_BUSINESS_QUALIFIER4
- FROM l1_s3 WHERE L3 = v_L3 
+ FROM d3_l1 WHERE L3 = v_L3 
  FETCH FIRST 1 ROWS ONLY;
  END IF;
  
@@ -156,9 +156,9 @@ DO
  L3TYPE , 
  REGION , 
  L4 , 
- OPSTATE_S1 , 
- OPSTATE_S2 , 
- OPSTATE_S3 , 
+ OPSTATE_D1 , 
+ OPSTATE_D2 , 
+ OPSTATE_D3 , 
  GEO_LOCATION , 
  GEO_AREA , 
  GEO_COORDINATES , 
@@ -174,9 +174,9 @@ DO
  v_L3TYPE , 
  v_REGION , 
  v_L4 , 
- v_OPSTATE_S1 , 
- v_OPSTATE_S2 , 
- v_OPSTATE_S3 , 
+ v_OPSTATE_D1 , 
+ v_OPSTATE_D2 , 
+ v_OPSTATE_D3 , 
  v_GEO_LOCATION , 
  v_GEO_AREA , 
  v_GEO_COORDINATES , 

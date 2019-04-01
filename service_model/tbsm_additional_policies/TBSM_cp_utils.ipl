@@ -1,3 +1,18 @@
+function find_status(total,bad,degr,status) {
+if (total = 0) { status = 0; }
+else {
+ if (bad = 0) {
+   if (degr > 0) { status = 3; }
+   else { status = 0; }
+ }
+ else {
+   if (bad = total) { status = 5; }
+   else { status = 3; }
+ }
+}
+}
+
+
 function get_family_tree(ServiceInstance,children) {
 i = 0;
 children = {};
@@ -64,54 +79,85 @@ while (i<length(children)) {
  }
 }
 
-function object_to_string(iobjects,ostring) {
+function parentonly_qresult_to_string(iobjects,ostring) {
 i = 0;
 ostring = '';
 while (i < length(iobjects)) {
- astring = ''+ iobjects[i].L2 + '|' +iobjects[i].L1+'';
-i=i+1;
-if (i < length(iobjects)) {
- ostring = ostring + astring + ',';
- } else {
- ostring = ostring + astring ;
- }
+ astring = ''+ iobjects[i].PARENT + '';
+ i=i+1;
+ if (i < length(iobjects)) { ostring = ostring + astring + ','; } 
+ else { ostring = ostring + astring ; }
  }
 ostring = ostring + '';
 }
 
-function string_to_object(istring,objects) {
+
+function parentonly_topologystring_to_objects(istring,objects) {
+i = 0;
+objects = {};
+elements = Split(istring,",");
+while (i < length(elements)) {
+thisobj = newObject();
+thisobj.parent = parts[0];
+objects = objects + thisobj;
+i=i+1;
+}
+}
+
+function parentchild_qresult_to_string(iobjects,ostring) {
+i = 0;
+ostring = '';
+while (i < length(iobjects)) {
+ astring = ''+ iobjects[i].PARENT + '|' +iobjects[i].CHILD +'';
+i=i+1;
+if (i < length(iobjects)) { ostring = ostring + astring + ','; } 
+else { ostring = ostring + astring ; }
+ }
+ostring = ostring + '';
+}
+
+function parentchild_topologystring_to_objects(istring,objects) {
 i = 0;
 objects = {};
 elements = Split(istring,",");
 while (i < length(elements)) {
 parts = Split(elements[i],"|");
 thisobj = newObject();
-thisobj.id = parts[0];
-thisobj.level1 = parts[1];
+thisobj.parent = parts[0];
+thisobj.child = parts[1];
 objects = objects + thisobj;
 i=i+1;
 }
-
 }
 
-function fetch_child_data(ServiceInstance,svr_data,esx_data,net_data) {
-Now = getdate(); // Now is held in Unix seconds since 1-jan-1970
+function fetch_topology_data(ServiceInstance,d1data,d2data,d3data,d4data) {
+Now = getdate(); // Now is held in Unix seconds since 1-jan-1970a
+
+// if cache timeout expired, then requery the topology to build the pipe-separated csv strings into the ServiceInstance attributes
+// in all cases output the pipe-separated csv strings as arrays of parent,child objects
+//
+ 
 if (Now >= ServiceInstance.ServiceCountsExpiry) {
 ServiceSource = "TBSMDatabase"; 
 CountOnly = false;
-Query = "SELECT l2 ,l1 FROM l1_s1  WHERE l3 = '" + Rextract(ServiceInstance.ServiceInstanceName,'(\w+)_L3O') + "'";
-result = DirectSQL(ServiceSource,Query,CountOnly); 
-object_to_string(result,ServiceInstance.svr_data);
-Query = "SELECT l2 ,l1 FROM l1_s2  WHERE l3 = '" + Rextract(ServiceInstance.ServiceInstanceName,'(\w+)_L3O') + "'";
-result = DirectSQL(ServiceSource,Query,CountOnly); 
-object_to_string(result,ServiceInstance.esx_data);
-Query = "SELECT l2 ,l1 FROM l1_s3  WHERE l3 = '" + Rextract(ServiceInstance.ServiceInstanceName,'(\w+)_L3O') + "'";
-result = DirectSQL(ServiceSource,Query,CountOnly); 
-object_to_string(result,ServiceInstance.net_data);
+
+queryd1 = "SELECT l2 AS PARENT,l1 AS CHILD FROM d1_l1  WHERE l3 = '" + Rextract(ServiceInstance.ServiceInstanceName,'(\w+)_L3O') + "'";
+resultd1 = DirectSQL(ServiceSource,queryd1,CountOnly); 
+parentchild_qresult_to_string(resultd1,ServiceInstance.d1data); 
+queryd2 = "SELECT l2 AS PARENT,l1 AS CHILD FROM d2_l1  WHERE l3 = '" + Rextract(ServiceInstance.ServiceInstanceName,'(\w+)_L3O') + "'";
+resultd2 = DirectSQL(ServiceSource,queryd2,CountOnly); 
+parentchild_qresult_to_string(resultd2,ServiceInstance.d2data); 
+queryd3 = "SELECT l2 AS PARENT,l1 AS CHILD FROM d3_l1  WHERE l3 = '" + Rextract(ServiceInstance.ServiceInstanceName,'(\w+)_L3O') + "'";
+resultd3 = DirectSQL(ServiceSource,queryd3,CountOnly); 
+parentchild_qresult_to_string(resultd3,ServiceInstance.d3data); 
+queryd4 = "SELECT l2 AS PARENT FROM d4_l2  WHERE l3 = '" + Rextract(ServiceInstance.ServiceInstanceName,'(\w+)_L3O') + "'";
+resultd4 = DirectSQL(ServiceSource,queryd4,CountOnly); 
+parentonly_qresult_to_string(resultd4,ServiceInstance.d4data); 
 }
-string_to_object(ServiceInstance.svr_data,svr_data);
-string_to_object(ServiceInstance.esx_data,esx_data);
-string_to_object(ServiceInstance.net_data,net_data);
+parentchild_topologystring_to_objects(ServiceInstance.d1data,d1data);
+parentchild_topologystring_to_objects(ServiceInstance.d2data,d2data);
+parentchild_topologystring_to_objects(ServiceInstance.d3data,d3data);
+parentonly_topologystring_to_objects(ServiceInstance.d4data,d4data);
 } 
 
  
@@ -134,7 +180,7 @@ good_dependents = {};
  }
 }
 
-function find_level1_from_level1_events(ilist,extract,olist)  {
+function find_children_with_childevents(ilist,extract,olist)  {
 olist={};
 i=0;
 while (i<length(ilist)) {
@@ -143,23 +189,23 @@ while (i<length(ilist)) {
 }
 }
 
-function find_level1_from_level3_events(data,level1) {
- level1 = {};
+function find_all_children(domaindata,children) {
+ children = {};
    j=0;
-   while (j<length(data)) {
-     level1 = level1 + data[j].level1;
+   while (j<length(domaindata)) {
+     children = children + domaindata[j].child;
      j = j+1;
    }
 }
 
-function find_level1_from_level2_events(list,data,extract,level1) {
- level1 = {};
+function find_children_of_affectedparents(affectedlist,domaindata,extract,children) {
+ children = {};
  i=0;
- while (i<length(list)) {
+ while (i<length(affectedlist)) {
    j=0;
-   while (j<length(data)) {
-     if (data[j].id = RExtract(list[i].id,extract)) {
-          level1 = level1 + data[j].level1;
+   while (j<length(domaindata)) {
+     if (domaindata[j].parent = RExtract(affectedlist[i].id,extract)) {
+          children = children + domaindata[j].child;
      }
      j = j+1;
    }
@@ -213,7 +259,12 @@ j=0;
 }
 
 
-function find_level1(dependents,data,level3_template,level2_template,level1_template,level3_extract,level2_extract,level1_extract,badlevel1,degrlevel1) {
+function find_level1(alldownflag,dependents,domaindata,level3_template,level2_template,level1_template,level3_extract,level2_extract,level1_extract,badlevel1,degrlevel1) {
+  badlevel1 = {}; degrlevel1 = {};
+  if (alldownflag = true) {
+   find_all_children(domaindata,badlevel1);
+  }
+  else {
   if (level3_template <> '') { 
   find_dependents_fortemplate(dependents,level3_template,badlevel3,degrlevel3,goodlevel3);  
   } else {
@@ -221,17 +272,18 @@ function find_level1(dependents,data,level3_template,level2_template,level1_temp
   }
   find_dependents_fortemplate(dependents,level2_template,badlevel2,degrlevel2,goodlevel2);  
   find_dependents_fortemplate(dependents,level1_template,badlevel1,degrlevel1,goodlevel1);  
-  if (length(badlevel3)=1) { find_level1_from_level3_events(data,badlevel1fromlevel3); } else { badlevel1fromlevel3 = {}; }
-  if (length(degrlevel3)=1) { find_level1_from_level3_events(data,degrlevel1fromlevel3); } else { degrlevel1fromlevel3 = {}; }
-  find_level1_from_level2_events(badlevel2,data,level2_extract,badlevel1fromlevel2);
-  find_level1_from_level2_events(degrlevel2,data,level2_extract,degrlevel1fromlevel2);
-  find_level1_from_level1_events(badlevel1,level1_extract,badlevel1fromlevel1); 
-  find_level1_from_level1_events(degrlevel1,level1_extract,degrlevel1fromlevel1); 
+  if (length(badlevel3)=1) { find_all_children(domaindata,badlevel1fromlevel3); } else { badlevel1fromlevel3 = {}; }
+  if (length(degrlevel3)=1) { find_all_children(domaindata,degrlevel1fromlevel3); } else { degrlevel1fromlevel3 = {}; }
+  find_children_of_affectedparents(badlevel2,domaindata,level2_extract,badlevel1fromlevel2);
+  find_children_of_affectedparents(degrlevel2,domaindata,level2_extract,degrlevel1fromlevel2);
+  find_children_with_childevents(badlevel1,level1_extract,badlevel1fromlevel1); 
+  find_children_with_childevents(degrlevel1,level1_extract,degrlevel1fromlevel1); 
   aorb_lists(badlevel1fromlevel3,badlevel1fromlevel2,badlevel1fromabove);
   aorb_lists(badlevel1fromabove,badlevel1fromlevel1,badlevel1);
   aorb_lists(degrlevel1fromlevel3,degrlevel1fromlevel2,degrlevel1fromabove);
   aorb_lists(degrlevel1fromabove,degrlevel1fromlevel1,degrlevel1all);
   anotb_lists(degrlevel1all,badlevel1,degrlevel1);
+  }
 }
 
 function update_additional_attributes(ServiceInstance) {
@@ -251,11 +303,6 @@ log("SiteAllServices_OverallStatus DB Error : ServiceSiteCounts Update Find Serv
 else {
  ServiceRow = MyServices[0];
  ServiceInstance.ServiceClassifier = ServiceRow.L3Type;
- ServiceInstance.NumL1 = ServiceRow.CountL1; 
- ServiceInstance.NumL1S1  = ServiceRow.CountL1S1; 
- ServiceInstance.NumL1S2  = ServiceRow.CountL1S2; 
- ServiceInstance.NumL1S3  = ServiceRow.CountL1S3; 
- ServiceInstance.NumL2  = ServiceRow.CountL2; 
 }
 
 Query2 = "SELECT access,priority,geo_location,geo_area,region" +

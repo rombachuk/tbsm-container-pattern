@@ -255,59 +255,82 @@ else
 		#@AlertKey = $PortNumber
                switch ($PortNumber) {
                    case "1":
-                     @Summary = "JVM CPU Utilitzation High 75%"
-                     @Service = "App"
+                     @Summary = "Unknown Condition"
                      @Severity = 3
+                     @Service = "Performance"
                    case "2":
-		     @Summary = "Login Transaction Response time high 5secs"
-                     @Service = "Trans"
+		     @Summary = "Major Network Error"
                      @Severity = 4
+                     @Service = "Performance"
                    case "3":
-                     @Summary = "A Web Site received too many requests per second."
-                     @Service = "Web"
+                     @Summary = "Performance Error"
                      @Severity = 3 
+                     @Service = "Performance"
                    case "4":
-                     @Summary = "DB2 CPU Utilisation High 75 %"
-                     @Service = "DB"
+                     @Summary = "Temporary Error"
                      @Severity = 3 
+                     @Service = "Performance"
                    default:
-                     @Summary = "Critical Application Error"
+                     @Summary = "Critical Network Error"
                      @Severity = 5
-                     @Service = "App"
+                     @Service = "Availability"
                }
 	}
 	else if (nmatch($Summary, "Diskspace"))
 	{
-	#	@AlertKey = $PercentFull + "% full"
-                @Service = "OS"
                 @Summary = "Diskspace Alert "+$PercentFull + "% full"
+                     @Service = "Availability"
 	}
 
 	if(regmatch($Summary, ".*Down.*")){
 		@Identifier = "Down" + @Identifier 
 		@Type = 1
                 @Severity = 5
-                @Service = "Network"
+                     @Service = "Availability"
 	}
 	if(regmatch($Summary, ".*Up.*")){
 		@Type = 2
                 @Severity =  1             
-                @Service = "Network"
+                     @Service = "Availability"
 	}
 
 	if(regmatch($Summary, ".*offline.*")){
 		@Identifier = "offline" + @Identifier 
 		@Type = 1
-                @Service = "VS"
                 @Severity = 5
-                @Summary = "A Virtual Machine has gone offline."
+                     @Service = "Availability"
 	}
 	if(regmatch($Summary, ".*online.*")){
 		@Type = 2
-                @Service = "VS"
                 @Severity = 1        
-                @Summary = "A Virtual Machine has come online."
+                     @Service = "Availability"
 	}
-	@Identifier 	= $Node + $Agent + $Severity + $AlertGroup + $AlertKey
+
+        if(regmatch(@AlertKey, "msapp.*")){
+                @Agent = "App"        
+        }
+        if(regmatch(@AlertKey, "app.*")){
+                @Agent = "App"        
+        }
+        if(regmatch(@AlertKey, "vm.*")){
+                @Agent = "Infra"        
+        }
+        if(regmatch(@AlertKey, "esx.*")){
+                @Agent = "Infra"        
+        }
+        if(regmatch(@AlertKey, "rtr.*")){
+                @Agent = "Network"        
+        }
+        if(regmatch(@AlertKey, "swtch.*")){
+                @Agent = "Network"        
+        }
+        if(regmatch(@AlertKey, "cfp.*")){
+                @Agent = "Network"        
+        }
+        if(regmatch(@AlertKey, "fw.*")){
+                @Agent = "Security"        
+        }
+	
+        @Identifier 	= $Node + $Agent + $Severity + $AlertGroup + $AlertKey
 }
 

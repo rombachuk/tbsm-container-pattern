@@ -40,8 +40,12 @@ drop table L3_STATUS @
 
 create TABLE L3_STATUS (
 L3 VARCHAR(64) NOT NULL, SITETYPE VARCHAR(10),
-L1_BADS1 INTEGER, L1_BADS2 INTEGER, L1_BADS3 INTEGER, L1_BAD INTEGER, L1_DEGRS2 INTEGER, L1_DEGRS3 INTEGER, L1_DEGRS1 INTEGER, L1_DEGR INTEGER, 
-L1_NUMS1 INTEGER, L2_NUMS1 INTEGER, L1_NUMS2 INTEGER, L2_NUMS2 INTEGER, L1_NUMS3 INTEGER, L3_NUMS3 INTEGER, 
+D1L1_BADS1 INTEGER, D1L1_BADS2 INTEGER, D1L1_BAD INTEGER, D1L1_DEGRS1 INTEGER,  D1L1_DEGRS2 INTEGER, D1L1_DEGR INTEGER,  
+D2L1_BADS1 INTEGER, D2L1_BADS2 INTEGER, D2L1_BAD INTEGER, D2L1_DEGRS1 INTEGER,  D2L1_DEGRS2 INTEGER, D2L1_DEGR INTEGER,  
+D3L1_BADS1 INTEGER, D3L1_BADS2 INTEGER, D3L1_BAD INTEGER, D3L1_DEGRS1 INTEGER,  D3L1_DEGRS2 INTEGER, D3L1_DEGR INTEGER,  
+D4L2_BADS2 INTEGER, D3L2_BADS3 INTEGER, D4L2_BAD INTEGER, D4L2_DEGRS2 INTEGER,  D4L2_DEGRS3 INTEGER, D3L2_DEGR INTEGER,  
+D1L1_NUM INTEGER, D2L1_NUM INTEGER, D3L1_NUM INTEGER, D4L2_NUM INTEGER, 
+D1STATUS INTEGER, D2STATUS INTEGER, D3STATUS INTEGER, D4STATUS INTEGER,
 S1STATUS INTEGER, S2STATUS INTEGER, S3STATUS INTEGER, S4STATUS INTEGER,
 STATUSSTRING VARCHAR(512),STATUSTEXT VARCHAR(512),OVERALLSTATUS INTEGER, UPDATED_UNIX INTEGER , UPDATED_SQL TIMESTAMP , UPDATED_COUNT INTEGER DEFAULT 0,
 PRIMARY KEY (L3)
@@ -56,19 +60,28 @@ CREATE OR REPLACE TRIGGER set_l3_status
     DELETE FROM l3_status WHERE l3 = n.l3;
     INSERT INTO l3_status 
      (L3, SITETYPE,
-      L1_BADS1, L1_BADS2, L1_BADS3, L1_BAD, L1_DEGRS1, L1_DEGRS2, L1_DEGRS3, L1_DEGR, 
-      S1STATUS, S2STATUS, S3STATUS,S4STATUS,
+D1L1_BADS1 , D1L1_BADS2 , D1L1_BAD , D1L1_DEGRS1 ,  D1L1_DEGRS2 , D1L1_DEGR ,  
+D2L1_BADS1 , D2L1_BADS2 , D2L1_BAD , D2L1_DEGRS1 ,  D2L1_DEGRS2 , D2L1_DEGR ,  
+D3L1_BADS1 , D3L1_BADS2 , D3L1_BAD , D3L1_DEGRS1 ,  D3L1_DEGRS2 , D3L1_DEGR ,  
+D4L2_BADS2 , D3L2_BADS3 , D4L2_BAD , D4L2_DEGRS2 ,  D4L2_DEGRS3 , D3L2_DEGR ,  
+D1L1_NUM , D2L1_NUM , D3L1_NUM , D4L2_NUM , 
+D1STATUS , D2STATUS , D3STATUS , D4STATUS ,
+S1STATUS , S2STATUS , S3STATUS , S4STATUS ,
       STATUSSTRING,STATUSTEXT,OVERALLSTATUS, UPDATED_UNIX, 
-      UPDATED_SQL--, 
-      --UPDATED_COUNT
+      UPDATED_SQL 
       )
     VALUES (
       n.l3, split(1,'|',n.content), 
-      INTEGER(split(2,'|',n.content)), INTEGER(split(3,'|',n.content)), INTEGER(split(4,'|',n.content)), INTEGER(split(5,'|',n.content)), INTEGER(split(6,'|',n.content)), INTEGER(split(7,'|',n.content)), INTEGER(split(8,'|',n.content)), INTEGER(split(9,'|',n.content)),
-      INTEGER(split(10,'|',n.content)), INTEGER(split(11,'|',n.content)), INTEGER(split(12,'|',n.content)), INTEGER(split(13,'|',n.content)), 
-      split(14,'|',n.content),split(15,'|',n.content), INTEGER(split(16,'|',n.content)), INTEGER(split(17,'|',n.content)), 
-      TIMESTAMP_FORMAT(split(18,'|',n.content),'YYYY-MM-DD HH24:MI:SS.FF')--, 
-      --INTEGER(split(43,'|',n.content))
+      INTEGER(split(2,'|',n.content)), INTEGER(split(3,'|',n.content)), INTEGER(split(4,'|',n.content)), INTEGER(split(5,'|',n.content)), INTEGER(split(6,'|',n.content)), INTEGER(split(7,'|',n.content)), 
+      INTEGER(split(8,'|',n.content)), INTEGER(split(9,'|',n.content)), INTEGER(split(10,'|',n.content)), INTEGER(split(11,'|',n.content)), INTEGER(split(12,'|',n.content)), INTEGER(split(13,'|',n.content)), 
+      INTEGER(split(14,'|',n.content)), INTEGER(split(15,'|',n.content)), INTEGER(split(16,'|',n.content)), INTEGER(split(17,'|',n.content)), INTEGER(split(18,'|',n.content)), INTEGER(split(19,'|',n.content)), 
+      INTEGER(split(20,'|',n.content)), INTEGER(split(21,'|',n.content)), INTEGER(split(22,'|',n.content)), INTEGER(split(23,'|',n.content)), INTEGER(split(24,'|',n.content)), INTEGER(split(25,'|',n.content)), 
+      INTEGER(split(26,'|',n.content)), INTEGER(split(27,'|',n.content)), INTEGER(split(28,'|',n.content)), INTEGER(split(29,'|',n.content)), 
+      INTEGER(split(30,'|',n.content)), INTEGER(split(31,'|',n.content)), INTEGER(split(32,'|',n.content)), INTEGER(split(33,'|',n.content)), 
+      INTEGER(split(34,'|',n.content)), INTEGER(split(35,'|',n.content)), INTEGER(split(36,'|',n.content)), INTEGER(split(37,'|',n.content)), 
+      INTEGER(split(38,'|',n.content)), INTEGER(split(39,'|',n.content)), INTEGER(split(40,'|',n.content)), INTEGER(split(41,'|',n.content)), 
+      split(42,'|',n.content),split(43,'|',n.content), INTEGER(split(44,'|',n.content)), INTEGER(split(45,'|',n.content)), 
+      TIMESTAMP_FORMAT(split(46,'|',n.content),'YYYY-MM-DD HH24:MI:SS.FF') 
     );
   END @
 
