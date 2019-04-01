@@ -50,8 +50,8 @@ function DAO_Rules_Modify(RulesDB,parameters)  {
    else {
        format_Classes(parameters.oldclasses,oldclasses);
        format_Classes(parameters.newclasses,newclasses);
-       updateruleq = "update rulemgr_rule set rule ="+ 
-       "replace(replace(rule,'"+oldclasses+"','"+newclasses+"'),"+ "'\""+parameters.oldimpact+"\"','\""+parameters.newimpact+"\"') where name='"+parameters.name+"'";
+       updateruleq = "update rulemgr_rule set jsondoc ="+ 
+       "replace(replace(jsondoc,'"+oldclasses+"','"+newclasses+"'),"+ "'\""+parameters.oldimpact+"\"','\""+parameters.newimpact+"\"') where name='"+parameters.name+"'";
        DirectSQL(RulesDB,updateruleq,'false');  
   }
 }

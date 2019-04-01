@@ -4,20 +4,42 @@ function generate_allattributestext_for_l3_serviceevent ( ServiceInstance, Insta
    StatusAttributesText = 
    RExtract(ServiceInstance.ServiceInstanceName,'(\w+)_L3O') + '|' +
    ServiceInstance.ServiceClassifier + '|' +   
-   length(Instance.badl1s1) + '|' +   
-   length(Instance.badl1s2) + '|' +   
-   length(Instance.badl1s3) + '|' +   
-   length(Instance.degrl1s1) + '|' +   
-   length(Instance.degrl1s2) + '|' +   
-   length(Instance.degrl1s3) + '|' +   
-   int(Instance.NumL1S1) + '|' +  
-   int(Instance.NumL1S2) + '|' +  
-   int(Instance.NumL1S3) + '|' +  
-   int(ServiceInstance.NumL2) + '|' +   
-   int(Instance.L3S1Status) + '|' +   
-   int(Instance.L3S2Status) + '|' +   
-   int(Instance.L3S3Status) + '|' +  
-   int(Instance.L3S4Status);
+   length(Instance.badd1l1s1) + '|' +   
+   length(Instance.badd1l1s2) + '|' +   
+   length(Instance.badd1l1) + '|' +   
+   length(Instance.degrd1l1s1) + '|' +   
+   length(Instance.degrd1l1s2) + '|' +   
+   length(Instance.degrd1l1) + '|' +   
+   length(Instance.badd2l1s1) + '|' +   
+   length(Instance.badd2l1s2) + '|' +   
+   length(Instance.badd2l1) + '|' +   
+   length(Instance.degrd2l1s1) + '|' +   
+   length(Instance.degrd2l1s2) + '|' +   
+   length(Instance.degrd2l1) + '|' +   
+   length(Instance.badd3l1s1) + '|' +   
+   length(Instance.badd3l1s2) + '|' +   
+   length(Instance.badd3l1) + '|' +   
+   length(Instance.degrd3l1s1) + '|' +   
+   length(Instance.degrd3l1s2) + '|' +   
+   length(Instance.degrd3l1) + '|' +   
+   length(Instance.badd4l2s2) + '|' +   
+   length(Instance.badd4l2s3) + '|' +   
+   length(Instance.badd3l1) + '|' +   
+   length(Instance.degrd4l2s3) + '|' +   
+   length(Instance.degrd4l2s3) + '|' +   
+   length(Instance.degrd4l2) + '|' +   
+   int(length(Instance.d1data)) + '|' +  
+   int(length(Instance.d2data)) + '|' +  
+   int(length(Instance.d3data)) + '|' +  
+   int(length(Instance.d4data)) + '|' +  
+   int(Instance.D1Status) + '|' +   
+   int(Instance.D2Status) + '|' +   
+   int(Instance.D3Status) + '|' +  
+   int(Instance.D4Status) + '|' +
+   int(Instance.S1Status) + '|' +   
+   int(Instance.S2Status) + '|' +   
+   int(Instance.S3Status) + '|' +  
+   int(Instance.S4Status);
     
    EnrichmentAttributesText =  
    ServiceInstance.Access + '|' +
@@ -64,82 +86,60 @@ function generate_statustext_for_l3_serviceevent (ServiceInstance, Instance, Sta
 
   startstmilli = JavaCall("java.lang.System",null,"currentTimeMillis",null);   
    
-NumL1S1 =  int(ServiceInstance.NumL1S1);
-NumL1S2 =  int(ServiceInstance.NumL1S2);
-NumL1S3 =  int(ServiceInstance.NumL1S3); 
+NumD1L1 =  length(Instance.d1data);
+NumD2L1 =  length(Instance.d2data);
+NumD3L1 =  length(Instance.d3data);
+NumD4L2 =  length(Instance.d4data);
  
  
-BadL1S1 = length(Instance.badl1s1); DegrL1S1 = length(Instance.degrl1s1);  
-BadL1S2 = length(Instance.badl1s2); DegrL1S2 = length(Instance.degrl1s2); 
-BadL1S3 = length(Instance.badl1s3); DegrL1S3 = length(Instance.degrl1s3); 
+BadD1L1S1 = length(Instance.badd1l1s1); DegrD1L1S1 = length(Instance.degrd1l1s1);  
+BadD1L1S2 = length(Instance.badd1l1s2); DegrD1L1S2 = length(Instance.degrd1l1s2); 
+BadD2L1S1 = length(Instance.badd2l1s1); DegrD2L1S1 = length(Instance.degrd2l1s1);  
+BadD2L1S2 = length(Instance.badd2l1s2); DegrD2L1S2 = length(Instance.degrd2l1s2); 
+BadD3L1S1 = length(Instance.badd3l1s1); DegrD3L1S1 = length(Instance.degrd3l1s1);  
+BadD3L1S2 = length(Instance.badd3l1s2); DegrD3L1S2 = length(Instance.degrd3l1s2); 
+GoodD1L1S1 = NumD1L1 - (BadD1L1S1 + DegrD1L1S1);
+GoodD1L1S2 = NumD1L1 - (BadD1L1S2 + DegrD1L1S2);
+GoodD2L1S1 = NumD2L1 - (BadD2L1S1 + DegrD2L1S1);
+GoodD2L1S2 = NumD2L1 - (BadD2L1S2 + DegrD2L1S2);
+GoodD3L1S1 = NumD3L1 - (BadD3L1S1 + DegrD3L1S1);
+GoodD3L1S2 = NumD3L1 - (BadD3L1S2 + DegrD3L1S2);
 
-GoodL1S1 = NumL1S1 - (BadL1S1 + DegrL1S1);
-GoodL1S2 = NumL1S2 - (BadL1S2 + DegrL1S2);
-GoodL1S3 = NumL1S3 - (BadL1S3 + DegrL1S3);
+StatusD1S1Text =   " D1: " + BadD1L1S1 + "/" + DegrD1L1S1 + "/" + GoodD1L1S1 + " of "+ NumD1L1;
+StatusD2S1Text =   " D2: " + BadD2L1S1 + "/" + DegrD2L1S1 + "/" + GoodD2L1S1 + " of "+ NumD2L1;
+StatusD3S1Text =   " D3: " + BadD3L1S1 + "/" + DegrD3L1S1 + "/" + GoodD3L1S1 + " of "+ NumD3L1;
+StatusD1S2Text =   " D1: " + BadD1L1S2 + "/" + DegrD1L1S2 + "/" + GoodD1L1S2 + " of "+ NumD1L1;
+StatusD2S2Text =   " D2: " + BadD2L1S2 + "/" + DegrD2L1S2 + "/" + GoodD2L1S2 + " of "+ NumD2L1;
+StatusD3S2Text =   " D3: " + BadD3L1S2 + "/" + DegrD3L1S2 + "/" + GoodD3L1S2 + " of "+ NumD3L1;
 
-StatusL1S1Text =   " S1: " + BadL1S1 + "/" + DegrL1S1 + "/" + GoodL1S1 + " of "+ NumL1S1;
-StatusL1S2Text =   " S2: " + BadL1S2 + "/" + DegrL1S2 + "/" + GoodL1S2 + " of "+ NumL1S2;
-StatusL1S3Text =   " S3: " + BadL1S3 + "/" + DegrL1S3 + "/" + GoodL1S3 + " of "+ NumL1S3;
+if (Instance.S1Status = 5) { StatusS1Text = "DOWN " ; } else { 
+if (Instance.S1Status = 3) { StatusS1Text = "DEGR " ; } else { StatusS1Text = "UP " ; } } 
+if (Instance.S2Status = 5) { StatusS2Text = "DOWN " ; } else { 
+if (Instance.S2Status = 3) { StatusS2Text = "DEGR " ; } else { StatusS2Text = "UP " ; } } 
 
-if (Instance.L3S1Status = 5) { StatusS1Text = "DOWN " ; } else { 
-if (Instance.L3S1Status = 3) { StatusS1Text = "DEGR " ; } else { StatusS1Text = "UP " ; }
-} 
-if (Instance.L3S2Status = 5) { StatusS2Text = "DOWN " ; } else { 
-if (Instance.L3S2Status = 3) { StatusS2Text = "DEGR " ; } else { StatusS2Text = "UP " ; }
-} 
-if (Instance.L3S3Status = 5) { StatusS3Text = "DOWN " ; } else { 
-if (Instance.L3S3Status = 3) { StatusS3Text = "DEGR " ; } else { StatusS3Text = "UP " ; }
-} 
-
-if (ServiceInstance.ServiceClassifier = 'S1only') {
-Status123Text = "S1:("+StatusS1Text+")";
+if (ServiceInstance.ServiceClassifier = 'D1only') {
+Status123Text = "S1:"+StatusS1Text+" ("+StatusD1S1Text+")";
 }
 
-if (ServiceInstance.ServiceClassifier = 'S2only') {
-Status123Text = "S2:("+StatusS2Text+")";
-}
 
-if (ServiceInstance.ServiceClassifier = 'S3only') {
-Status123Text = "S3:("+StatusS3Text+")";
-} 
-
-
-if (ServiceInstance.ServiceClassifier = 'S1S2') { 
-Status123Text = "S1:("+StatusS1Text+") S2:("+StatusS2Text+")";
-} 
-
-if (ServiceInstance.ServiceClassifier = 'S1S3') { 
-Status123Text = "S1:("+StatusS1Text+") S3:("+StatusS3Text+")";
-} 
-
-
-if (ServiceInstance.ServiceClassifier = 'S2S3') { 
-Status123Text = "S2:("+StatusS2Text+") S3:("+StatusS3Text+")";
-}
-
-if (ServiceInstance.ServiceClassifier = 'S1S2S3') { 
-Status123Text = "S1:("+StatusS1Text+") S2:("+StatusS2Text+") S3:("+StatusS3Text+")";
+if (ServiceInstance.ServiceClassifier = 'D1D2D3') { 
+Status123Text = "S1:"+StatusS1Text+"("+StatusD1S1Text+StatusD2S1Text+StatusD3S1Text+") S2:" + StatusS2Text+"("+StatusD1S2Text+StatusD2S2Text+StatusD3S2Text+")";
 }
 
  
-if (Instance.L3S4Status = 5) { StatusS4Text = "DOWN " ; } else { 
-if (Instance.L3S4Status = 3) { StatusS4Text = "DEGR "  ; } else { StatusS4Text = "UP " ; }
-}
-
-if (Instance.L3S1Status = 5) { StatusS1Text = "DOWN " + StatusL1S1Text; } else { 
-if (Instance.L3S1Status = 3) { StatusS1Text = "DEGR " + StatusL1S1Text; } else { StatusS1Text = "UP " + StatusL1S1Text; }
-}
-
-if (Instance.L3S2Status = 5) { StatusS2Text = "DOWN " + StatusL1S2Text; } else { 
-if (Instance.L3S2Status = 3) { StatusS2Text = "DEGR " + StatusL1S2Text; } else { StatusS2Text = "UP " + StatusL1S2Text; }
-}
-
-if (Instance.L3S3Status = 5) { StatusS3Text = "DOWN " + StatusL1S3Text; } else { 
-if (Instance.L3S3Status = 3) { StatusS3Text = "DEGR " + StatusL1S3Text; } else { StatusS3Text = "UP " + StatusL1S3Text; }
-}
+if (Instance.S4Status = 5) { StatusS4Text = "DOWN" ; } 
+else { if (Instance.S4Status = 3) { StatusS4Text = "DEGR"  ; } else { StatusS4Text = "UP" ; } }
+if (Instance.D1Status = 5) { StatusD1Text = "DOWN" ; } 
+else { if (Instance.D1Status = 3) { StatusD1Text = "DEGR"  ; } else { StatusD1Text = "UP" ; } }
+if (Instance.D2Status = 5) { StatusD2Text = "DOWN" ; } 
+else { if (Instance.D2Status = 3) { StatusD2Text = "DEGR"  ; } else { StatusD2Text = "UP" ; } }
+if (Instance.D3Status = 5) { StatusD3Text = "DOWN" ; } 
+else { if (Instance.D3Status = 3) { StatusD3Text = "DEGR"  ; } else { StatusD3Text = "UP" ; } }
+if (Instance.D4Status = 5) { StatusD4Text = "DOWN" ; } 
+else { if (Instance.D4Status = 3) { StatusD4Text = "DEGR"  ; } else { StatusD4Text = "UP" ; } }
 
 
-StatusText = "L3: " + ServiceInstance.ServiceClassifier + " : " + RExtract(ServiceInstance.ServiceInstanceName,'(\w+)_L3O') + " S4(" + StatusS4Text + ") S1(" + StatusS1Text + ") S2(" + StatusS2Text + ") S3(" + StatusS3Text + ") " + Status123Text;
+StatusText = "L3: " + ServiceInstance.ServiceClassifier + " : " + RExtract(ServiceInstance.ServiceInstanceName,'(\w+)_L3O') + " D4(" + StatusD4Text + ") D1(" + StatusD1Text + ") D2(" + StatusD2Text + ") D3(" + StatusD3Text + ") " + Status123Text;
   
 
 }
@@ -148,9 +148,9 @@ StatusText = "L3: " + ServiceInstance.ServiceClassifier + " : " + RExtract(Servi
 function generate_servicetext_for_l3_serviceevent ( Instance, ServiceText) {
  startstmilli = JavaCall("java.lang.System",null,"currentTimeMillis",null);
  
-L3S1Status = Instance.L3S1Status;
-L3S2Status = Instance.L3S2Status;
-L3S3Status = Instance.L3S3Status;
+L3S1Status = Instance.S1Status;
+L3S2Status = Instance.S2Status;
+L3S3Status = Instance.S3Status;
 
 if ((L3S1Status = 5) AND (L3S2Status = 5) AND (L3S3Status = 5)) { ServiceText = "ALL SERVICES DOWN"; }
 if ((L3S1Status = 5) AND (L3S2Status = 5) AND (L3S3Status = 3)) { ServiceText = "S1 and S2 SERVICES DOWN, S3 SERVICES REDUCED"; }
