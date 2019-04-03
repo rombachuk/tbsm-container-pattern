@@ -52,9 +52,6 @@ else
         @AlertGroup = myapps[1]
         @AlertKey = myapps[2]
       
-        if ( regmatch($Node, ".*rtr001.*")) {
-          @Location = "Charlotte"
-        }
 
         if (regmatch($Node, ".*esx01.*") 
            || regmatch($Node, ".*esx02.*") 

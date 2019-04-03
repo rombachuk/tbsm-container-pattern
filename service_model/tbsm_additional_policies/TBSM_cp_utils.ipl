@@ -98,7 +98,7 @@ objects = {};
 elements = Split(istring,",");
 while (i < length(elements)) {
 thisobj = newObject();
-thisobj.parent = parts[0];
+thisobj.parent = elements[i];
 objects = objects + thisobj;
 i=i+1;
 }
@@ -258,6 +258,28 @@ j=0;
  }
 }
 
+
+function find_level2(alldownflag,dependents,domaindata,level3_template,level2_template,level3_extract,level2_extract,badlevel2,degrlevel2) {
+  badlevel2 = {}; degrlevel2 = {};
+  if (alldownflag = true) {
+   badlevel2 = domaindata;
+  }
+  else {
+  if (level3_template <> '') { 
+  find_dependents_fortemplate(dependents,level3_template,badlevel3,degrlevel3,goodlevel3);  
+  } else {
+  badlevel3 = {}; degrlevel3 = {};
+  }
+  find_dependents_fortemplate(dependents,level2_template,badlevel2,degrlevel2,goodlevel2);  
+  if (length(badlevel3)=1) { badlevel2fromlevel3 = domaindata; } else { badlevel2fromlevel3 = {}; }
+  if (length(degrlevel3)=1) { degrlevel2fromlevel3 = domaindata; } else { degrlevel2fromlevel3 = {}; }
+  find_children_with_childevents(badlevel2,level2_extract,badlevel2fromlevel2); 
+  find_children_with_childevents(degrlevel2,level2_extract,degrlevel2fromlevel2); 
+  aorb_lists(badlevel2fromlevel3,badlevel2fromlevel2,badlevel2);
+  aorb_lists(degrlevel2fromlevel3,degrlevel2fromlevel2,degrlevel2all);
+  anotb_lists(degrlevel2all,badlevel2,degrlevel2);
+  }
+}
 
 function find_level1(alldownflag,dependents,domaindata,level3_template,level2_template,level1_template,level3_extract,level2_extract,level1_extract,badlevel1,degrlevel1) {
   badlevel1 = {}; degrlevel1 = {};
