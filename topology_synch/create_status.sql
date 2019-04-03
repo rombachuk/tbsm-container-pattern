@@ -47,10 +47,9 @@ D4L2_BADS2 INTEGER, D3L2_BADS3 INTEGER, D4L2_BAD INTEGER, D4L2_DEGRS2 INTEGER,  
 D1L1_NUM INTEGER, D2L1_NUM INTEGER, D3L1_NUM INTEGER, D4L2_NUM INTEGER, 
 D1STATUS INTEGER, D2STATUS INTEGER, D3STATUS INTEGER, D4STATUS INTEGER,
 S1STATUS INTEGER, S2STATUS INTEGER, S3STATUS INTEGER, S4STATUS INTEGER,
-STATUSSTRING VARCHAR(512),STATUSTEXT VARCHAR(512),OVERALLSTATUS INTEGER, UPDATED_UNIX INTEGER , UPDATED_SQL TIMESTAMP , UPDATED_COUNT INTEGER DEFAULT 0,
+STATUSSTRING VARCHAR(512),STATUSTEXT VARCHAR(512),OVERALLSTATUS INTEGER, UPDATED_UNIX INTEGER , UPDATED_SQL TIMESTAMP,
 PRIMARY KEY (L3)
 ) @
-
 
 CREATE OR REPLACE TRIGGER set_l3_status
   AFTER INSERT ON l3_status_staging
@@ -72,19 +71,18 @@ S1STATUS , S2STATUS , S3STATUS , S4STATUS ,
       )
     VALUES (
       n.l3, split(1,'|',n.content), 
-      INTEGER(split(2,'|',n.content)), INTEGER(split(3,'|',n.content)), INTEGER(split(4,'|',n.content)), INTEGER(split(5,'|',n.content)), INTEGER(split(6,'|',n.content)), INTEGER(split(7,'|',n.content)), 
-      INTEGER(split(8,'|',n.content)), INTEGER(split(9,'|',n.content)), INTEGER(split(10,'|',n.content)), INTEGER(split(11,'|',n.content)), INTEGER(split(12,'|',n.content)), INTEGER(split(13,'|',n.content)), 
-      INTEGER(split(14,'|',n.content)), INTEGER(split(15,'|',n.content)), INTEGER(split(16,'|',n.content)), INTEGER(split(17,'|',n.content)), INTEGER(split(18,'|',n.content)), INTEGER(split(19,'|',n.content)), 
-      INTEGER(split(20,'|',n.content)), INTEGER(split(21,'|',n.content)), INTEGER(split(22,'|',n.content)), INTEGER(split(23,'|',n.content)), INTEGER(split(24,'|',n.content)), INTEGER(split(25,'|',n.content)), 
+      INTEGER(split(2,'|',n.content)), INTEGER(split(3,'|',n.content)), INTEGER(split(4,'|',n.content)), INTEGER(split(5,'|',n.content)), INTEGER(split(6,'|',n.content)), 
+      INTEGER(split(7,'|',n.content)), INTEGER(split(8,'|',n.content)), INTEGER(split(9,'|',n.content)), INTEGER(split(10,'|',n.content)), INTEGER(split(11,'|',n.content)), 
+      INTEGER(split(12,'|',n.content)), INTEGER(split(13,'|',n.content)), INTEGER(split(14,'|',n.content)), INTEGER(split(15,'|',n.content)), INTEGER(split(16,'|',n.content)), 
+      INTEGER(split(17,'|',n.content)), INTEGER(split(18,'|',n.content)), INTEGER(split(19,'|',n.content)), INTEGER(split(20,'|',n.content)), INTEGER(split(21,'|',n.content)),
+      INTEGER(split(22,'|',n.content)), INTEGER(split(23,'|',n.content)), INTEGER(split(24,'|',n.content)), INTEGER(split(25,'|',n.content)), 
       INTEGER(split(26,'|',n.content)), INTEGER(split(27,'|',n.content)), INTEGER(split(28,'|',n.content)), INTEGER(split(29,'|',n.content)), 
       INTEGER(split(30,'|',n.content)), INTEGER(split(31,'|',n.content)), INTEGER(split(32,'|',n.content)), INTEGER(split(33,'|',n.content)), 
       INTEGER(split(34,'|',n.content)), INTEGER(split(35,'|',n.content)), INTEGER(split(36,'|',n.content)), INTEGER(split(37,'|',n.content)), 
-      INTEGER(split(38,'|',n.content)), INTEGER(split(39,'|',n.content)), INTEGER(split(40,'|',n.content)), INTEGER(split(41,'|',n.content)), 
-      split(42,'|',n.content),split(43,'|',n.content), INTEGER(split(44,'|',n.content)), INTEGER(split(45,'|',n.content)), 
-      TIMESTAMP_FORMAT(split(46,'|',n.content),'YYYY-MM-DD HH24:MI:SS.FF') 
+      split(38,'|',n.content),split(39,'|',n.content), INTEGER(split(40,'|',n.content)), INTEGER(split(41,'|',n.content)), 
+      TIMESTAMP_FORMAT(split(42,'|',n.content),'YYYY-MM-DD HH24:MI:SS.FF') 
     );
   END @
-
 
 commit work @
 

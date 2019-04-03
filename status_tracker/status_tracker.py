@@ -23,11 +23,11 @@ def db2terminate(exe):
     subprocess.call([exe,"terminate"],stdout=fnull,stderr=fnull)
     fnull.close()
 
-def db2write(exe,table,key,content):
+def db2write(exe,table,key,value,content):
+    db2command = 'delete from '+table+' where '+key+' =\''+value+'\''
     fnull = open('/dev/null','w')
-    db2command = 'delete from '+table+' where key=\''+content[0]+'\''
     subprocess.call([exe,db2command],stdout=fnull,stderr=fnull)
-    db2command = ' insert into '+table+' values(\''+key+'\',\''+content.strip()+'\')'
+    db2command = ' insert into '+table+' values(\''+value+'\',\''+content.strip()+'\')'
     subprocess.call([exe,db2command],stdout=fnull,stderr=fnull)
     subprocess.call([exe,"commit work"],stdout=fnull,stderr=fnull)
     fnull.close()
@@ -35,10 +35,11 @@ def db2write(exe,table,key,content):
 
 
 def netcoolbuildupdate(table,contentparts):
-    summary = contentparts[16]
-    service = contentparts[17]
+    summary = contentparts[38]
+    service = contentparts[39]
+    customer = contentparts[46]
     location = contentparts[0]
-    row = "update "+ table + " set RAD_SeenByImpact=0,Summary='" + summary + "',Service='" + service + \
+    row = "update "+ table + " set RAD_SeenByImpact=0,Customer='"+customer+"',Summary='" + summary + "',Service='" + service + \
           "',Location = '" + location + "'" + \
     " where Class = 12000 and RAD_ServiceName ='"+location+"_L3O'"
     return row
@@ -67,7 +68,7 @@ def netcoolwrite(exe,db,user,password,table,contentparts):
 
 def statuswrite(content,dbexe,ncexe,db,user,password):
     contentparts = content.split('|')
-    db2write(dbexe,'l3_status_staging',contentparts[0],content)
+    db2write(dbexe,'l3_status_staging','l3',contentparts[0],content)
     netcoolwrite(ncexe,db,user,password,'alerts.status',contentparts)
 
 

@@ -6,6 +6,10 @@ LogFlag = false;
 // The following statement ensures any change of the child templates which drive them -  trigger this policy, and allowing recalculations at this level (L3) 
 //
 
+if (InstanceNode.CacheRefresh.Value = 1) {
+ ServiceInstance.ServiceCountsRefresh = 0;
+}
+
 NumAffL1 = InstanceNode.NumBadD1L1S1.Value + InstanceNode.NumBadD1L1S2.Value + InstanceNode.NumBadD2L1S1.Value + InstanceNode.NumBadD2L1S2.Value + 
            InstanceNode.NumBadD3L1S1.Value + InstanceNode.NumBadD3L1S2.Value + 
            InstanceNode.NumDegrD1L1S1.Value + InstanceNode.NumDegrD1L1S2.Value + InstanceNode.NumDegrD2L1S1.Value + InstanceNode.NumDegrD2L1S2.Value + 
@@ -16,7 +20,7 @@ NumAffL2 = InstanceNode.NumBadD1L2S1.Value + InstanceNode.NumBadD1L2S2.Value + I
            InstanceNode.NumDegrD1L2S1.Value + InstanceNode.NumDegrD1L2S2.Value + InstanceNode.NumDegrD2L2S1.Value + InstanceNode.NumDegrD2L2S2.Value + 
            InstanceNode.NumDegrD3L2S1.Value + InstanceNode.NumDegrD3L2S2.Value +  
            InstanceNode.NumDegrD4L2S2.Value + InstanceNode.NumDegrD4L2S3.Value; 
-NumAffL3 = InstanceNode.NumBadAllDL3S4.Value + InstanceNode.NumDegrAllDL3S4.Value + InstanceNode.Dummy.Value ; 
+AffL3 = InstanceNode.S4Status.Value + InstanceNode.Dummy.Value ; 
 
 
   children = {}; dependents = {}; svr_data={}; esx_data={}; net_data={}; 
@@ -25,12 +29,12 @@ NumAffL3 = InstanceNode.NumBadAllDL3S4.Value + InstanceNode.NumDegrAllDL3S4.Valu
 
 // local variables d1data etc are object arrays, serviceinstance.d1data is a string
   cp_utils.fetch_topology_data(ServiceInstance,thisInstance.d1data,thisInstance.d2data,thisInstance.d3data,thisInstance.d4data); 
-  cp_utils.find_dependents_fortemplate(dependents,'domain4level2service2',thisInstance.badd4l2s2,thisInstance.degrd4l2s2,goodd4l2s2);
-  cp_utils.find_dependents_fortemplate(dependents,'domain4level2service3',thisInstance.badd4l2s3,thisInstance.degrd4l2s2,goodd4l2s3);
-  cp_utils.find_status(length(thisInstance.d4data),length(thisInstance.badd4l2s3),0,thisInstance.D4S3Status);
-  cp_utils.find_status(length(thisInstance.d4data),length(thisInstance.badd4l2s2),length(thisInstance.degrd4l2s2),thisInstance.D4S2Status);
+  alldown_flag = false;
+  cp_utils.find_level2(alldown_flag,dependents,thisInstance.d4data,'','domain4level2service3','','(\w+)_D4L2S3',thisInstance.badd4l2s3,thisInstance.degrd4l2s3);
+  cp_utils.find_status(length(thisInstance.d4data),length(thisInstance.badd4l2s3),length(thisInstance.degrd4l2s3),thisInstance.D4S3Status);
   if (thisInstance.D4S3Status = 5) { alldown_flag = true; } 
   else { alldown_flag = false; }
+  cp_utils.find_level2(alldown_flag,dependents,thisInstance.d4data,'','domain4level2service2','','(\w+)_D4L2S2',thisInstance.badd4l2s2,thisInstance.degrd4l2s2);
   cp_utils.find_level1(alldown_flag,dependents,thisInstance.d1data,'','domain1level2service1','domain1level1service1','','(\w+)_D1L2S1','(\w+)_D1L1S1',thisInstance.badd1l1s1,thisInstance.degrd1l1s1);
   cp_utils.find_level1(alldown_flag,dependents,thisInstance.d1data,'','domain1level2service2','domain1level1service2','','(\w+)_D1L2S2','(\w+)_D1L1S2',thisInstance.badd1l1s2,thisInstance.degrd1l1s2);
   cp_utils.find_level1(alldown_flag,dependents,thisInstance.d2data,'','domain2level2service1','domain2level1service1','','(\w+)_D2L2S1','(\w+)_D2L1S1',thisInstance.badd2l1s1,thisInstance.degrd2l1s1);
@@ -40,10 +44,11 @@ NumAffL3 = InstanceNode.NumBadAllDL3S4.Value + InstanceNode.NumDegrAllDL3S4.Valu
 
   cp_utils.find_status(length(thisInstance.d1data),length(thisInstance.badd1l1s1),length(thisInstance.degrd1l1s1),thisInstance.D1S1Status);
   cp_utils.find_status(length(thisInstance.d1data),length(thisInstance.badd1l1s2),length(thisInstance.degrd1l1s2),thisInstance.D1S2Status);
-  cp_utils.find_status(length(thisInstance.d2data),length(thisInstance.badd2l1s1),length(thisInstance.degrd121s1),thisInstance.D2S1Status);
-  cp_utils.find_status(length(thisInstance.d2data),length(thisInstance.badd2l1s2),length(thisInstance.degrd121s2),thisInstance.D2S2Status);
-  cp_utils.find_status(length(thisInstance.d3data),length(thisInstance.badd3l1s1),length(thisInstance.degrd131s1),thisInstance.D3S1Status);
-  cp_utils.find_status(length(thisInstance.d3data),length(thisInstance.badd3l1s2),length(thisInstance.degrd131s2),thisInstance.D3S2Status);
+  cp_utils.find_status(length(thisInstance.d2data),length(thisInstance.badd2l1s1),length(thisInstance.degrd2l1s1),thisInstance.D2S1Status);
+  cp_utils.find_status(length(thisInstance.d2data),length(thisInstance.badd2l1s2),length(thisInstance.degrd2l1s2),thisInstance.D2S2Status);
+  cp_utils.find_status(length(thisInstance.d3data),length(thisInstance.badd3l1s1),length(thisInstance.degrd311s1),thisInstance.D3S1Status);
+  cp_utils.find_status(length(thisInstance.d3data),length(thisInstance.badd3l1s2),length(thisInstance.degrd312s2),thisInstance.D3S2Status);
+  cp_utils.find_status(length(thisInstance.d4data),length(thisInstance.badd4l2s2),length(thisInstance.degrd3l2s2),thisInstance.D4S2Status);
   cp_utils.update_additional_attributes(ServiceInstance); // updates cache-time so do last
 
   if (thisInstance.D1S2Status = 5) { thisInstance.D1Status = 5; } 
@@ -58,6 +63,10 @@ NumAffL3 = InstanceNode.NumBadAllDL3S4.Value + InstanceNode.NumDegrAllDL3S4.Valu
   else { 
     if ((thisInstance.D3S2Status >= 3) OR (thisInstance.D3S1Status >= 3)) { thisInstance.D3Status = 3; } else { thisInstance.D3Status = 0; }
   }
+  if ((thisInstance.D4S2Status = 5) OR (thisInstance.D4S3Status = 5)){ thisInstance.D4Status = 5; } 
+  else { 
+    if ((thisInstance.D4S2Status >= 3) OR (thisInstance.D4S3Status >= 3)) { thisInstance.D4Status = 3; } else { thisInstance.D4Status = 0; }
+  }
 
   if ((thisInstance.D1S1Status = 5) AND (thisInstance.D2S1Status = 5) AND (thisInstance.D3S1Status = 5)) { thisInstance.S1Status = 5; }
   else {
@@ -71,10 +80,14 @@ NumAffL3 = InstanceNode.NumBadAllDL3S4.Value + InstanceNode.NumDegrAllDL3S4.Valu
    else {thisInstance.S2Status = 0; }
   }
 
+  thisInstance.S3Status = thisInstance.D4S3Status; 
+  thisInstance.S4Status = InstanceNode.S4Status.Value; 
+  
+
  //log("DEPENDENTS:"+dependents);
  //log("INSTANCE:"+thisInstance);
 
-if ((thisInstance.S1Status = 5) OR (thisInstance.S3Status = 5)) 
+if ((thisInstance.S2Status = 5) OR (thisInstance.S3Status = 5)) 
 {NewStatus = 5; }
 else {
    if ((thisInstance.S1Status >= 3) OR (thisInstance.S2Status >= 3) OR (thisInstance.S3Status >= 3) OR (thisInstance.S4Status >= 3)) 
